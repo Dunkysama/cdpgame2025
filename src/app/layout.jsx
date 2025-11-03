@@ -24,7 +24,7 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
       >
         <FlashlightWrapper />
-        <div className="relative z-10">
+        <div className="relative z-[10]">
           {children}
         </div>
       </body>
