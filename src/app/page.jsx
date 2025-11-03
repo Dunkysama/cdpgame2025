@@ -22,6 +22,7 @@ export default function HomePage() {
           setAvatars(parsedAvatars);
         } catch (e) {
           console.error("Erreur lors du chargement des avatars:", e);
+          console.error("Erreur lors du chargement des avatars:", e);
         }
       }
     }
