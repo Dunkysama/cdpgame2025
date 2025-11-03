@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
   const [avatars, setAvatars] = useState([]);
   const [selectedPseudo, setSelectedPseudo] = useState(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [avatarToDelete, setAvatarToDelete] = useState(null);
+  const router = useRouter();
 
   // Charger les avatars depuis localStorage au montage
   useEffect(() => {
@@ -20,6 +22,7 @@ export default function HomePage() {
           setAvatars(parsedAvatars);
         } catch (e) {
           console.error("Erreur lors du chargement des avatars:", e);
+          console.error("Erreur lors du chargement des avatars:", e);
         }
       }
     }
@@ -27,8 +30,7 @@ export default function HomePage() {
 
   const handlePlay = () => {
     if (selectedPseudo) {
-      // Logique pour démarrer le jeu avec le pseudo sélectionné
-      console.log("Jouer avec:", selectedPseudo);
+      router.push("/carte");
     }
   };
 
