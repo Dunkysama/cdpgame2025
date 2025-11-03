@@ -2,31 +2,29 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simuler une requête de connexion
-    setTimeout(() => {
-      console.log("Connexion:", { email, password });
-      setIsLoading(false);
-      // Ici vous pouvez ajouter la logique de connexion réelle
-    }, 1000);
+    // Redirection vers la page d'accueil
+    router.push("/");
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100 font-sans dark:from-zinc-900 dark:to-black">
-      <div className="w-full max-w-md px-6">
+    <div className="flex min-h-screen items-center justify-center font-sans relative">
+      <div className="w-full max-w-md px-6 relative z-10">
         {/* En-tête */}
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold font-pixel text-black dark:text-zinc-50">
+          <h1 className="text-3xl font-bold font-pixel text-white">
             CONNEXION
           </h1>
         </div>
@@ -37,7 +35,7 @@ export default function LoginPage() {
           <div>
             <label
               htmlFor="email"
-              className="block text-xs font-medium font-pixel text-zinc-700 dark:text-zinc-300 mb-2"
+              className="block text-xs font-medium font-pixel text-white mb-2"
             >
             NOM D'UTILISATEUR
             </label>
@@ -56,7 +54,7 @@ export default function LoginPage() {
           <div>
             <label
               htmlFor="password"
-              className="block text-xs font-medium font-pixel text-zinc-700 dark:text-zinc-300 mb-2"
+              className="block text-xs font-medium font-pixel text-white mb-2"
             >
               MOT DE PASSE
             </label>
@@ -120,7 +118,7 @@ export default function LoginPage() {
           <div className="text-right">
             <Link
               href="/mot-de-passe-oublie"
-              className="text-[10px] font-medium font-pixel text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+              className="text-[10px] font-medium font-pixel text-white hover:text-zinc-300"
             >
               Mot de passe oublié ?
             </Link>
@@ -138,11 +136,11 @@ export default function LoginPage() {
 
         {/* Lien vers l'inscription */}
         <div className="mt-6 text-center">
-          <p className="text-[10px] font-medium font-pixel text-zinc-600 dark:text-zinc-400">
+          <p className="text-[10px] font-medium font-pixel text-white">
             Vous n'avez pas de compte ?{" "}
             <Link
               href="/inscription"
-              className="font-medium text-zinc-900 hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-300"
+              className="font-medium text-white hover:text-zinc-300 underline"
             >
               S'inscrire
             </Link>
@@ -152,3 +150,4 @@ export default function LoginPage() {
     </div>
   );
 }
+
