@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import Link from "next/link";
 
@@ -13,22 +12,35 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (password !== confirmPassword) {
-      alert("Les mots de passe ne correspondent pas");
-      return;
+  e.preventDefault();
+
+  if (password !== confirmPassword) {
+    alert("Les mots de passe ne correspondent pas");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const res = await fetch("/inscription", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, username, mot_de_passe }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data?.error || "Échec de l'inscription");
     }
-    
-    setIsLoading(true);
-    
-    // Simuler une requête d'inscription
-    setTimeout(() => {
-      console.log("Inscription:", { email, username, password });
-      setIsLoading(false);
-      // Ici vous pouvez ajouter la logique d'inscription réelle
-    }, 1000);
-  };
+
+    alert("✅ Compte créé avec succès !");
+  } catch (err) {
+    alert("❌ " + (err.message || "Erreur serveur"));
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100 font-sans dark:from-zinc-900 dark:to-black">
