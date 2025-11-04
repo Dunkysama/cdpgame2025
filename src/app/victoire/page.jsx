@@ -50,14 +50,14 @@ export default function VictoryPage() {
           style={{
             backgroundColor: confetti.color,
             left: `${confetti.left}%`,
-            top: '-10px',
+            top: '-20px',
             animation: `fall ${confetti.duration}s linear ${confetti.delay}s forwards`,
             transform: `rotate(${confetti.rotation}deg)`,
           }}
         />
       ))}
 
-      <div className="w-full max-w-4xl px-6 relative z-10 text-center">
+      <div className="w-[80%] px-6 relative z-10 text-center">
         <h1 className="text-6xl md:text-8xl font-bold font-pixel text-yellow-400 mb-8 animate-bounce">
           VOUS AVEZ GAGNÉ !
         </h1>
