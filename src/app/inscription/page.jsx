@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -14,14 +13,43 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    setIsLoading(true);
-    
-    // Redirection vers la page d'accueil
-    router.push("/");
-  };
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (password !== confirmPassword) {
+    alert("Les mots de passe ne correspondent pas");
+    return;
+  }
+  setIsLoading(true);
+
+  try {
+    const res = await fetch("/api/inscription", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: email.trim(),
+        username: username.trim(),
+        password,
+      }),
+      cache: "no-store",
+    });
+
+    // si le serveur renvoie du HTML (erreur) on évite res.json() qui plante
+    const ct = res.headers.get("content-type") || "";
+    const payload = ct.includes("application/json") ? await res.json() : await res.text();
+
+    if (!res.ok) {
+      const msg = typeof payload === "string" ? payload : payload?.error;
+      throw new Error(msg || "Erreur lors de l'inscription");
+    }
+
+    alert("✅ Compte créé !");
+    setEmail(""); setUsername(""); setPassword(""); setConfirmPassword("");
+  } catch (err) {
+    alert("❌ " + (err.message || "Erreur serveur"));
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="flex min-h-screen items-center justify-center font-sans relative">
