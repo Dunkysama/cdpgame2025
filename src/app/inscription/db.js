@@ -3,11 +3,11 @@ const { Pool } = pkg;
 
 // Lis d'abord les variables d'env, sinon fallback utiles pour local
 const pool = new Pool({
-  host: "localhost",        // ou "db" si Docker
+  host: "192.168.3.77",
   port: 5432,
-  database: "postgres",     // ou ton nom BDD : jeuBDD
-  user: "postgres",         // ou "jeu"
-  password: "admin",        // ou "Jeu1"
+  database: "postgres",
+  user: "postgres",
+  password: "admin",
 });
 
 pool.connect()
@@ -19,5 +19,6 @@ pool.connect()
     console.error("❌ Erreur de connexion PostgreSQL :", err.message);
     process.exit(1);
   });
+
 
 export default pool;

@@ -1,38 +1,36 @@
-import { NextResponse } from "next/server";
-import bcrypt from "bcrypt";
-import pool from "./db.js";   // connexion à ta base PostgreSQL
+import bcrypt from "bcryptjs";
+import pool from "./db.js";
 
-export async function POST(req) {
+export async function registerUser({ email, username, password }) {
   try {
-    const { email, username, password } = await req.json();
-
     if (!email || !username || !password) {
-      return NextResponse.json({ error: "Données manquantes" }, { status: 400 });
+      return { status: 400, body: { error: "Champs manquants" } };
     }
 
-    // Vérifier si utilisateur déjà existant
+    // email/username déjà pris ?
     const exists = await pool.query(
       "SELECT 1 FROM utilisateurs WHERE email = $1 OR username = $2",
       [email, username]
     );
-
     if (exists.rows.length > 0) {
-      return NextResponse.json({ error: "Email ou nom d'utilisateur déjà utilisé" }, { status: 409 });
+      return {
+        status: 409,
+        body: { error: "Email ou nom d'utilisateur déjà utilisé" },
+      };
     }
 
-    // Hash du mot de passe
+    // hash du mot de passe
     const hash = await bcrypt.hash(password, 12);
 
-    // Insertion dans la table avec la colonne 'mot_de_passe'
+    // insertion
     await pool.query(
       "INSERT INTO utilisateurs (email, username, mot_de_passe) VALUES ($1, $2, $3)",
       [email, username, hash]
     );
 
-    return NextResponse.json({ ok: true, message: "Inscription réussie !" }, { status: 201 });
-
-  } catch (error) {
-    console.error("Erreur backend inscription :", error);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+    return { status: 201, body: { ok: true, message: "Inscription réussie" } };
+  } catch (err) {
+    console.error("registerUser error:", err);
+    return { status: 500, body: { error: "Erreur serveur" } };
   }
 }

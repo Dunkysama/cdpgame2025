@@ -11,30 +11,37 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
   e.preventDefault();
-
   if (password !== confirmPassword) {
     alert("Les mots de passe ne correspondent pas");
     return;
   }
-
   setIsLoading(true);
 
   try {
-    const res = await fetch("/inscription", {
+    const res = await fetch("/api/inscription", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, username, mot_de_passe }),
+      body: JSON.stringify({
+        email: email.trim(),
+        username: username.trim(),
+        password,
+      }),
+      cache: "no-store",
     });
 
-    const data = await res.json();
+    // si le serveur renvoie du HTML (erreur) on évite res.json() qui plante
+    const ct = res.headers.get("content-type") || "";
+    const payload = ct.includes("application/json") ? await res.json() : await res.text();
 
     if (!res.ok) {
-      throw new Error(data?.error || "Échec de l'inscription");
+      const msg = typeof payload === "string" ? payload : payload?.error;
+      throw new Error(msg || "Erreur lors de l'inscription");
     }
 
-    alert("✅ Compte créé avec succès !");
+    alert("✅ Compte créé !");
+    setEmail(""); setUsername(""); setPassword(""); setConfirmPassword("");
   } catch (err) {
     alert("❌ " + (err.message || "Erreur serveur"));
   } finally {
