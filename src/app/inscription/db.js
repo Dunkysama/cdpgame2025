@@ -1,22 +1,22 @@
 import pkg from "pg";
 const { Pool } = pkg;
 
-// Connexion PostgreSQL (hors Docker)
+// Lis d'abord les variables d'env, sinon fallback utiles pour local
 const pool = new Pool({
-  host: "192.168.3.77",  // IP de ton serveur ou PC où tourne la BDD
+  host: "localhost",        // ou "db" si Docker
   port: 5432,
-  database: "postgres",  //  à modifier si ta vraie BDD s'appelle autrement
-  user: "postgres",
-  password: "admin",
+  database: "postgres",     // ou ton nom BDD : jeuBDD
+  user: "postgres",         // ou "jeu"
+  password: "admin",        // ou "Jeu1"
 });
 
 pool.connect()
-  .then(client => {
+  .then((client) => {
     console.log("✅ Connexion réussie à la base PostgreSQL !");
     client.release();
   })
-  .catch(err => {
-    console.error("❌ Erreur de connexion à la base PostgreSQL :", err.message);
+  .catch((err) => {
+    console.error("❌ Erreur de connexion PostgreSQL :", err.message);
     process.exit(1);
   });
 
