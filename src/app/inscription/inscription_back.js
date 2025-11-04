@@ -9,7 +9,7 @@ export async function registerUser({ email, username, password }) {
 
     // email/username déjà pris ?
     const exists = await pool.query(
-      "SELECT 1 FROM utilisateurs WHERE email = $1 OR username = $2",
+      "SELECT 1 FROM Utilisateurs WHERE email = $1 OR nom_utilisateur = $2",
       [email, username]
     );
     if (exists.rows.length > 0) {
@@ -24,7 +24,7 @@ export async function registerUser({ email, username, password }) {
 
     // insertion
     await pool.query(
-      "INSERT INTO utilisateurs (email, username, mot_de_passe) VALUES ($1, $2, $3)",
+      "INSERT INTO Utilisateurs (email, nom_utilisateur, mot_de_passe) VALUES ($1, $2, $3)",
       [email, username, hash]
     );
 
