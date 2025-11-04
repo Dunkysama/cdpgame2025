@@ -206,14 +206,33 @@ export default function HomePage() {
         </div>
 
         {/* Bouton Jouer */}
-        <div className="flex justify-center mt-12">
+        <div className="flex flex-col gap-4 justify-center mt-12">
           <button
             onClick={handlePlay}
             disabled={!selectedPseudo}
-            className="w-full max-w-md rounded-lg font-pixel bg-zinc-900 px-8 py-6 text-lg font-semibold text-white transition-colors hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-zinc-900"
+            className="w-full max-w-md rounded-lg font-pixel bg-zinc-900 px-8 py-6 text-lg font-semibold text-white transition-colors hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-zinc-900 mx-auto"
           >
             JOUER
           </button>
+
+          <Link
+            href="/furie-sanguinaire"
+            className="w-full max-w-md rounded-lg font-pixel bg-zinc-900 px-8 py-6 text-lg font-semibold text-white transition-colors hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 mx-auto text-center block"
+          >
+            FURIE
+          </Link>
+          <Link
+            href="/code-complet"
+            className="w-full max-w-md rounded-lg font-pixel bg-zinc-900 px-8 py-6 text-lg font-semibold text-white transition-colors hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 mx-auto text-center block"
+          >
+            SORT
+          </Link>
+          <Link
+            href="/reconstruire-epee"
+            className="w-full max-w-md rounded-lg font-pixel bg-zinc-900 px-8 py-6 text-lg font-semibold text-white transition-colors hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 mx-auto text-center block"
+          >
+            ÉPÉE
+          </Link>
         </div>
 
         {/* Popup de confirmation de suppression */}
