@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import potion from "@/asset/potion.png";
 
-export default function MarchandPage({ onClose }) {
+export default function MarchandPage({ onClose, onApplyItem = () => {}, onGoldChange = () => {} }) {
   const [gold, setGold] = useState(0);
   const [items, setItems] = useState({
     coeur: 0,
@@ -21,9 +21,9 @@ export default function MarchandPage({ onClose }) {
       if (savedGold) {
         setGold(parseInt(savedGold, 10));
       } else {
-        // Valeur par défaut : 50 gold
-        setGold(50);
-        localStorage.setItem("playerGold", "50");
+        // Valeur par défaut : 0 gold (les pièces gagnées en quiz alimentent l'achat)
+        setGold(0);
+        localStorage.setItem("playerGold", "0");
       }
 
       // Charger les items
@@ -56,7 +56,7 @@ export default function MarchandPage({ onClose }) {
       id: "tokenIndice",
       name: "Potion",
       iconImage: potion,
-      price: 0,
+      price: 50,
       description: "Une potion utile qui vous aide lors des défis. Utilisez-la pour obtenir un avantage.",
     },
     {
@@ -84,6 +84,12 @@ export default function MarchandPage({ onClose }) {
         localStorage.setItem("playerGold", newGold.toString());
         localStorage.setItem("playerItems", JSON.stringify(newItems));
       }
+
+      // Notifier le parent (quiz) pour mettre à jour l'affichage de l'or
+      onGoldChange(newGold);
+
+      // Appliquer l'effet immédiat de l'objet acheté
+      onApplyItem(item.id);
 
       // Message de confirmation
       alert(`Vous avez acheté ${item.name} pour ${item.price} gold !`);
