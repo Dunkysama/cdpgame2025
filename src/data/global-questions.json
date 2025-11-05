@@ -1,0 +1,164 @@
+{
+  "questions": [
+    {
+      "id": 1,
+      "level": "facile",
+      "question": "Qui est considéré comme l'inventeur du World Wide Web (WWW) ?",
+      "options": ["Tim Berners-Lee", "Bill Gates", "Mark Zuckerberg", "Steve Jobs"],
+      "correctIndex": 0,
+      "hint": "Il travaillait au CERN."
+    },
+    {
+      "id": 2,
+      "level": "facile",
+      "question": "Quel est le moteur de recherche le plus utilisé dans le monde ?",
+      "options": ["Google", "Bing", "Yahoo", "DuckDuckGo"],
+      "correctIndex": 0,
+      "hint": "Son nom est devenu un verbe."
+    },
+    {
+      "id": 3,
+      "level": "facile",
+      "question": "Que signifie \"Wi-Fi\" ?",
+      "options": ["Wireless Fidelity", "Wireless Fiber", "Web Frequency Interface", "Wide Field Internet"],
+      "correctIndex": 0,
+      "hint": "Souvent utilisé pour se connecter sans fil."
+    },
+    {
+      "id": 4,
+      "level": "facile",
+      "question": "Quel langage a été conçu pour rendre les pages web interactives ?",
+      "options": ["JavaScript", "HTML", "SQL", "C++"],
+      "correctIndex": 0,
+      "hint": "Abrégé par \"JS\"."
+    },
+    {
+      "id": 5,
+      "level": "facile",
+      "question": "Quel est le système d'exploitation mobile de Google ?",
+      "options": ["Android", "iOS", "Windows Mobile", "HarmonyOS"],
+      "correctIndex": 0,
+      "hint": "Son symbole est un petit robot vert."
+    },
+    {
+      "id": 6,
+      "level": "moyen",
+      "question": "Quel est le nom du premier programme informatique au monde ?",
+      "options": [
+        "Le programme de la machine analytique d'Ada Lovelace",
+        "MS-DOS",
+        "Fortran",
+        "Unix"
+      ],
+      "correctIndex": 0,
+      "hint": "Écrit par une femme au 19e siècle."
+    },
+    {
+      "id": 7,
+      "level": "moyen",
+      "question": "Quelle entreprise a été fondée en premier ?",
+      "options": ["IBM", "Microsoft", "Apple", "Google"],
+      "correctIndex": 0,
+      "hint": "Fondée en 1911."
+    },
+    {
+      "id": 8,
+      "level": "moyen",
+      "question": "Quelle unité mesure la rapidité de transfert des données sur un réseau ?",
+      "options": ["Mbps (Megabits par seconde)", "RPM", "Hz", "KBH"],
+      "correctIndex": 0,
+      "hint": "Utilisée pour la vitesse Internet."
+    },
+    {
+      "id": 9,
+      "level": "moyen",
+      "question": "Quel est le nom du robot automatique envoyé sur Mars par la NASA en 2021 ?",
+      "options": ["Perseverance", "Curiosity", "Spirit", "Opportunity"],
+      "correctIndex": 0,
+      "hint": "Son nom évoque la ténacité."
+    },
+    {
+      "id": 10,
+      "level": "moyen",
+      "question": "Quel protocole est utilisé pour sécuriser les échanges sur un site web ?",
+      "options": ["HTTPS", "FTP", "SMTP", "TCP"],
+      "correctIndex": 0,
+      "hint": "Représenté par un cadenas dans le navigateur."
+    },
+    {
+      "id": 11,
+      "level": "difficile",
+      "question": "Quel était le surnom du premier réseau lié à Internet ?",
+      "options": ["ARPANET", "NETSPACE", "COBRANET", "WEBFIRST"],
+      "correctIndex": 0,
+      "hint": "Créé par l'armée américaine."
+    },
+    {
+      "id": 12,
+      "level": "difficile",
+      "question": "Quelle entreprise a popularisé le concept du \"cloud computing\" avec sa plateforme AWS ?",
+      "options": ["Amazon", "Microsoft", "Google", "IBM"],
+      "correctIndex": 0,
+      "hint": "À l'origine, c'était une librairie en ligne."
+    },
+    {
+      "id": 13,
+      "level": "difficile",
+      "question": "Quelle est la première cryptomonnaie apparue en 2009 ?",
+      "options": ["Bitcoin", "Ethereum", "Litecoin", "Monero"],
+      "correctIndex": 0,
+      "hint": "Créée par Satoshi Nakamoto."
+    },
+    {
+      "id": 14,
+      "level": "difficile",
+      "question": "Quel fondateur de PayPal est aussi à l'origine de SpaceX ?",
+      "options": ["Elon Musk", "Jeff Bezos", "Jack Dorsey", "Larry Page"],
+      "correctIndex": 0,
+      "hint": "Il dirige également Tesla."
+    },
+    {
+      "id": 15,
+      "level": "difficile",
+      "question": "Quelle est la méthode de chiffrement utilisée par HTTPS ?",
+      "options": ["TLS (Transport Layer Security)", "MD5", "SHA-1", "DES"],
+      "correctIndex": 0,
+      "hint": "Son nom contient \"Transport\" et \"Security\"."
+    }
+  ],
+  "bonusQuestions": [
+    {
+      "id": 101,
+      "level": "bonus",
+      "question": "Quel langage est principalement utilisé pour le style des pages web ?",
+      "options": ["CSS", "HTML", "Python", "C#"],
+      "correctIndex": 0,
+      "hint": "Couleurs, marges, police, positionnement…"
+    },
+    {
+      "id": 102,
+      "level": "bonus",
+      "question": "Quelle base de données est de type NoSQL parmi ces choix ?",
+      "options": ["MongoDB", "MySQL", "PostgreSQL", "SQLite"],
+      "correctIndex": 0,
+      "hint": "Documents au lieu de tables"
+    },
+    {
+      "id": 103,
+      "level": "bonus",
+      "question": "Quelle entreprise développe le navigateur Chrome ?",
+      "options": ["Google", "Mozilla", "Microsoft", "Apple"],
+      "correctIndex": 0,
+      "hint": "Android, Gmail, YouTube…"
+    },
+    {
+      "id": 104,
+      "level": "bonus",
+      "question": "Que signifie 'CPU' ?",
+      "options": ["Central Processing Unit", "Core Peripheral Unit", "Computer Power Unit", "Control Program Unit"],
+      "correctIndex": 0,
+      "hint": "Le cerveau de l'ordinateur"
+    }
+  ]
+}
+

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import QuizLayout from "@/app/components/QuizLayout";
 import globalPlaine from "@/asset/global__plaine.png";
 import plateforme from "@/asset/plateforme.png";
@@ -9,114 +9,29 @@ import heart from "@/asset/heart.jpg";
 import heartless from "@/asset/heartless.jpg";
 import coin from "@/asset/coin.jpg";
 import token from "@/asset/token.png";
-import { recordQuizCompletion } from "@/app/utils/badges";
+import MarchandPage from "@/app/marchand/page.jsx";
+import globalQuestionsData from "@/data/global-questions.json";
+
+
+// Configuration du quiz
+const QUIZ_CONFIG = {
+  MAX_SCORE: 8,
+};
 
 export default function GlobalQuizPage() {
-  const initialQuestions = useMemo(
-    () => [
-      // Niveau Facile (3)
-      {
-        level: "facile",
-        question: "Qui est considéré comme l'inventeur du World Wide Web (WWW) ?",
-        options: ["Tim Berners-Lee", "Bill Gates", "Mark Zuckerberg", "Steve Jobs"],
-        correctIndex: 0,
-        hint: "Il travaillait au CERN.",
-      },
-      {
-        level: "facile",
-        question: "Quel est le moteur de recherche le plus utilisé dans le monde ?",
-        options: ["Google", "Bing", "Yahoo", "DuckDuckGo"],
-        correctIndex: 0,
-        hint: "Son nom est devenu un verbe.",
-      },
-      {
-        level: "facile",
-        question: "Que signifie “Wi-Fi” ?",
-        options: ["Wireless Fidelity", "Wireless Fiber", "Web Frequency Interface", "Wide Field Internet"],
-        correctIndex: 0,
-        hint: "Souvent utilisé pour se connecter sans fil.",
-      },
+  // Charger toutes les questions depuis le JSON
+  const allQuestions = useMemo(() => globalQuestionsData.questions, []);
+  const bonusQuestions = useMemo(() => globalQuestionsData.bonusQuestions, []);
 
-      // Niveau Moyen (3)
-      {
-        level: "moyen",
-        question: "Quel est le nom du premier programme informatique au monde ?",
-        options: [
-          "Le programme de la machine analytique d’Ada Lovelace",
-          "MS-DOS",
-          "Fortran",
-          "Unix",
-        ],
-        correctIndex: 0,
-        hint: "Écrit par une femme au 19e siècle.",
-      },
-      {
-        level: "moyen",
-        question: "Quelle entreprise a été fondée en premier ?",
-        options: ["IBM", "Microsoft", "Apple", "Google"],
-        correctIndex: 0,
-        hint: "Fondée en 1911.",
-      },
-      {
-        level: "moyen",
-        question: "Quelle unité mesure la rapidité de transfert des données sur un réseau ?",
-        options: ["Mbps (Megabits par seconde)", "RPM", "Hz", "KBH"],
-        correctIndex: 0,
-        hint: "Utilisée pour la vitesse Internet.",
-      },
+  // Sélectionner une question aléatoire au début
+  const getRandomQuestion = () => {
+    if (allQuestions.length === 0) return null;
+    return allQuestions[Math.floor(Math.random() * allQuestions.length)];
+  };
 
-      // Niveau Difficile (2)
-      {
-        level: "difficile",
-        question: "Quel était le surnom du premier réseau lié à Internet ?",
-        options: ["ARPANET", "NETSPACE", "COBRANET", "WEBFIRST"],
-        correctIndex: 0,
-        hint: "Créé par l’armée américaine.",
-      },
-      {
-        level: "difficile",
-        question: "Quelle entreprise a popularisé le concept du \"cloud computing\" avec sa plateforme AWS ?",
-        options: ["Amazon", "Microsoft", "Google", "IBM"],
-        correctIndex: 0,
-        hint: "À l’origine, c’était une librairie en ligne.",
-      },
-    ], []);
-
-  // Questions bonus (hors des 8 déjà en place)
-  const bonusQuestions = useMemo(
-    () => [
-      {
-        level: "bonus",
-        question: "Quel langage est principalement utilisé pour le style des pages web ?",
-        options: ["CSS", "HTML", "Python", "C#"],
-        correctIndex: 0,
-        hint: "Couleurs, marges, police, positionnement…",
-      },
-      {
-        level: "bonus",
-        question: "Quelle base de données est de type NoSQL parmi ces choix ?",
-        options: ["MongoDB", "MySQL", "PostgreSQL", "SQLite"],
-        correctIndex: 0,
-        hint: "Documents au lieu de tables",
-      },
-      {
-        level: "bonus",
-        question: "Quelle entreprise développe le navigateur Chrome ?",
-        options: ["Google", "Mozilla", "Microsoft", "Apple"],
-        correctIndex: 0,
-        hint: "Android, Gmail, YouTube…",
-      },
-      {
-        level: "bonus",
-        question: "Que signifie ‘CPU’ ?",
-        options: ["Central Processing Unit", "Core Peripheral Unit", "Computer Power Unit", "Control Program Unit"],
-        correctIndex: 0,
-        hint: "Le cerveau de l’ordinateur",
-      },
-    ], []);
-
-  const [questions, setQuestions] = useState(initialQuestions);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // État du quiz - on garde toujours la même question actuelle jusqu'à ce qu'elle soit remplacée
+  const initialQuestion = getRandomQuestion();
+  const [currentQuestion, setCurrentQuestion] = useState(initialQuestion);
   const [answered, setAnswered] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [score, setScore] = useState(0);
@@ -124,36 +39,85 @@ export default function GlobalQuizPage() {
   const [timer, setTimer] = useState(15);
   const [lives, setLives] = useState(3);
   const [tokens, setTokens] = useState(1);
-  const [responseTimes, setResponseTimes] = useState([]); // Temps de réponse pour chaque question
-  const [quizCompleted, setQuizCompleted] = useState(false);
+  const [isMerchantOpen, setIsMerchantOpen] = useState(false);
+  const [hasVisitedMerchant, setHasVisitedMerchant] = useState(false);
+  const [usedQuestionIds, setUsedQuestionIds] = useState(new Set(initialQuestion ? [initialQuestion.id] : []));
+  const usedQuestionIdsRef = useRef(new Set(initialQuestion ? [initialQuestion.id] : []));
+
+  // Synchroniser le ref avec l'état
+  useEffect(() => {
+    usedQuestionIdsRef.current = usedQuestionIds;
+  }, [usedQuestionIds]);
+
+  // Trouver une nouvelle question aléatoire dans le JSON (non utilisée)
+  const findNewRandomQuestion = useCallback((currentQuestionId, usedIds) => {
+    // Trouver toutes les questions qui ne sont pas déjà utilisées
+    const availableQuestions = allQuestions.filter(
+      (q) => !usedIds.has(q.id) && q.id !== currentQuestionId
+    );
+
+    if (availableQuestions.length > 0) {
+      const randomQuestion = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+      return randomQuestion;
+    }
+
+    // Si toutes les questions ont été utilisées, prendre n'importe quelle question différente
+    const allOtherQuestions = allQuestions.filter((q) => q.id !== currentQuestionId);
+    if (allOtherQuestions.length > 0) {
+      const randomQuestion = allOtherQuestions[Math.floor(Math.random() * allOtherQuestions.length)];
+      return randomQuestion;
+    }
+
+    return null;
+  }, [allQuestions]);
+
+  // Remplacer la question actuelle par une nouvelle du JSON
+  const replaceCurrentQuestion = useCallback(() => {
+    setCurrentQuestion((prevQuestion) => {
+      if (!prevQuestion) return prevQuestion;
+      
+      // Utiliser le ref pour avoir la valeur actuelle
+      const currentUsedIds = usedQuestionIdsRef.current;
+      const updated = new Set([...currentUsedIds, prevQuestion.id]);
+      const newQuestion = findNewRandomQuestion(prevQuestion.id, currentUsedIds);
+      
+      if (newQuestion) {
+        updated.add(newQuestion.id);
+        setUsedQuestionIds(updated);
+        setTimeout(() => {
+          setAnswered(false);
+          setSelectedIndex(null);
+        }, 0);
+        return newQuestion;
+      }
+      
+      setUsedQuestionIds(updated);
+      return prevQuestion;
+    });
+  }, [findNewRandomQuestion]);
 
   useEffect(() => {
     setShowHint(false);
     setTimer(15);
-  }, [currentIndex]);
+  }, [currentQuestion]);
 
   useEffect(() => {
     if (answered) return; // stop countdown after answering
+    if (isMerchantOpen) return; // pause countdown while merchant modal is open
+    if (score >= QUIZ_CONFIG.MAX_SCORE) return; // stop countdown if quiz is finished
     if (timer <= 0) {
       setAnswered(true);
-      // Enregistrer le temps de réponse (temps écoulé = 15 secondes)
-      setResponseTimes(prev => [...prev, 15]);
       setTimeout(() => {
-        if (currentIndex < questions.length - 1) {
-          setCurrentIndex((i) => i + 1);
-          setAnswered(false);
-          setSelectedIndex(null);
-          setTimer(15);
-        } else {
-          // Quiz terminé
-          setQuizCompleted(true);
+        // Temps écoulé : remplacer la question par une nouvelle
+        if (score < QUIZ_CONFIG.MAX_SCORE && currentQuestion) {
+          replaceCurrentQuestion();
         }
       }, 1000);
       return;
     }
     const id = setTimeout(() => setTimer((t) => t - 1), 1000);
     return () => clearTimeout(id);
-  }, [timer, answered, currentIndex]);
+  }, [timer, answered, isMerchantOpen, score, currentQuestion, replaceCurrentQuestion]);
 
   const playSuccessTone = () => {
     try {
@@ -172,51 +136,75 @@ export default function GlobalQuizPage() {
     } catch {}
   };
 
-  const currentQuestion = questions[currentIndex];
+  // Calculer si le quiz est terminé
+  const isQuizFinished = score >= QUIZ_CONFIG.MAX_SCORE;
 
   const handleAnswer = (index) => {
+    if (isMerchantOpen) return;
     if (answered) return;
+    if (isQuizFinished) return; // Ne pas répondre si le quiz est terminé
+    if (!currentQuestion) return; // Ne pas répondre si pas de question
+    
     setSelectedIndex(index);
     const isCorrect = index === currentQuestion.correctIndex;
     setAnswered(true);
     
-    // Enregistrer le temps de réponse (temps écoulé depuis le début de la question)
-    const responseTime = 15 - timer; // Temps restant depuis le début
-    setResponseTimes(prev => [...prev, responseTime]);
-    
     if (isCorrect) {
-      setScore((s) => s + 1);
+      // Bonne réponse : incrémenter le score
+      setScore((s) => {
+        const nextScore = Math.min(s + 1, QUIZ_CONFIG.MAX_SCORE);
+        // Ouvrir le marchand à la 8e bonne réponse
+        if (nextScore === QUIZ_CONFIG.MAX_SCORE && !hasVisitedMerchant) {
+          setIsMerchantOpen(true);
+          setHasVisitedMerchant(true);
+        }
+        return nextScore;
+      });
       playSuccessTone();
+      
+      // Si on atteint 8 bonnes réponses, le quiz est terminé - NE PAS remplacer la question
+      setTimeout(() => {
+        setScore((currentScore) => {
+          const finalScore = Math.min(currentScore, QUIZ_CONFIG.MAX_SCORE);
+          if (finalScore >= QUIZ_CONFIG.MAX_SCORE) {
+            return finalScore; // Quiz terminé, ne rien faire
+          }
+          // Sinon, remplacer la question par une nouvelle du JSON
+          replaceCurrentQuestion();
+          return finalScore;
+        });
+      }, 1000);
     } else {
+      // Mauvaise réponse : remplacer la question actuelle par une nouvelle du JSON
+      // Le score n'est PAS incrémenté
       setLives((l) => Math.max(0, l - 1));
+      setTimeout(() => {
+        setScore((currentScore) => {
+          if (currentScore >= QUIZ_CONFIG.MAX_SCORE) {
+            return currentScore; // Quiz terminé, ne rien faire
+          }
+          // Remplacer la question par une nouvelle du JSON
+          replaceCurrentQuestion();
+          return currentScore;
+        });
+      }, 1000);
     }
-    setTimeout(() => {
-      if (currentIndex < questions.length - 1) {
-        setCurrentIndex((i) => i + 1);
-        setAnswered(false);
-        setSelectedIndex(null);
-      } else {
-        // Quiz terminé
-        setQuizCompleted(true);
-      }
-    }, 1000);
   };
 
-  // Enregistrer les résultats du quiz quand il est terminé
+  // Quand le marchand se ferme après la 8e bonne réponse, le quiz est terminé
   useEffect(() => {
-    if (quizCompleted) {
-      // Une victoire signifie avoir terminé le quiz avec au moins une vie restante
-      const isWin = lives > 0;
-      recordQuizCompletion(score, questions.length, responseTimes, isWin);
-      setQuizCompleted(false); // Réinitialiser pour éviter les appels multiples
+    if (!isMerchantOpen && hasVisitedMerchant && score >= QUIZ_CONFIG.MAX_SCORE) {
+      // Quiz terminé, ne rien faire de plus
+      return;
     }
-  }, [quizCompleted, score, questions.length, lives, responseTimes]);
+  }, [isMerchantOpen, hasVisitedMerchant, score]);
 
   // Consommer un token pour révéler l'indice
   const handleRevealHint = () => {
     if (answered) return; // ne pas révéler après avoir répondu
     if (showHint) return; // déjà visible
     if (tokens <= 0) return; // pas de token
+    if (isQuizFinished) return; // ne pas révéler si le quiz est terminé
     setTokens((t) => Math.max(0, t - 1));
     setShowHint(true);
   };
@@ -226,20 +214,17 @@ export default function GlobalQuizPage() {
     if (answered) return; // éviter de changer après réponse
     if (tokens <= 0) return; // pas de token disponible
     if (!bonusQuestions.length) return; // aucune question bonus définie
+    if (isQuizFinished) return; // ne pas changer si le quiz est terminé
 
     // Choisir une question bonus aléatoire
     const nextBonus = bonusQuestions[Math.floor(Math.random() * bonusQuestions.length)];
 
-    // Remplacer la question à l'index courant
-    setQuestions((qs) => {
-      const copy = [...qs];
-      copy[currentIndex] = nextBonus;
-      return copy;
-    });
-
+    // Remplacer la question actuelle
+    setCurrentQuestion(nextBonus);
+    setShowHint(false);
+    
     // Consommer le token
     setTokens((t) => Math.max(0, t - 1));
-    setShowHint(false);
   };
 
   // Plateformes ordonnées du bas (top élevé) vers le haut (top faible)
@@ -266,32 +251,47 @@ export default function GlobalQuizPage() {
     { top: "34%", left: "48%" },
   ];
 
+  // Index actuel du personnage basé sur le score
+  const currentCharacterIndex = Math.max(
+    -1,
+    Math.min(
+      score - 1,
+      (Array.isArray(characterPositions) ? characterPositions.length - 1 : 0)
+    )
+  );
+
+  // Ouvrir la modale du marchand quand l'elfe arrive à { top: "39%", left: "39%" }
+  const merchantIndex = 4;
+  useEffect(() => {
+    if (currentCharacterIndex === merchantIndex && !hasVisitedMerchant) {
+      setIsMerchantOpen(true);
+      setHasVisitedMerchant(true);
+    }
+  }, [currentCharacterIndex, hasVisitedMerchant]);
+
+  const closeMerchant = () => setIsMerchantOpen(false);
+
   return (
+    <>
     <QuizLayout
       title="THÈME 6 – QUIZ GLOBAL (Culture Tech)"
       level={currentQuestion?.level}
-      question={currentQuestion.question}
-      options={currentQuestion.options}
-      correctIndex={currentQuestion.correctIndex}
+      question={currentQuestion?.question || ""}
+      options={currentQuestion?.options || []}
+      correctIndex={currentQuestion?.correctIndex ?? 0}
       selectedIndex={selectedIndex}
       answered={answered}
       onSelect={handleAnswer}
-      hint={currentQuestion.hint}
+      hint={currentQuestion?.hint || ""}
       showHint={showHint}
       onRevealHint={handleRevealHint}
-      score={score}
-      currentIndex={currentIndex}
-      total={questions.length}
+      score={Math.min(score, QUIZ_CONFIG.MAX_SCORE)}
+      currentIndex={0}
+      total={QUIZ_CONFIG.MAX_SCORE}
       visualImageSrc={globalPlaine.src}
       visualOverlayItems={platforms}
       visualCharacterSrc={elfFemelle.src}
-      visualCharacterIndex={Math.max(
-        -1,
-        Math.min(
-          score - 1,
-          (Array.isArray(characterPositions) ? characterPositions.length - 1 : platforms.length - 1)
-        )
-      )}
+      visualCharacterIndex={currentCharacterIndex}
       visualCharacterWidth="5%"
       visualCharacterStartTop="100%"
       visualCharacterStartLeft="50%"
@@ -305,15 +305,25 @@ export default function GlobalQuizPage() {
       tokens={tokens}
       onChangeQuestion={handleChangeQuestion}
       onNext={() => {
-        if (!answered) return;
-        setCurrentIndex((i) => i + 1);
-        setAnswered(false);
-        setSelectedIndex(null);
-        setTimer(15);
+        // Bouton désactivé car on ne passe plus à la question suivante
+        // On remplace toujours la question actuelle
+        return;
       }}
-      hasNext={currentIndex < questions.length - 1}
+      hasNext={false}
       timerSeconds={timer}
       timerTotalSeconds={15}
     />
+
+    {isMerchantOpen && (
+      <div className="fixed inset-0 z-[999] bg-black/80 flex items-center justify-center">
+        <div className="relative w-[90%] max-w-4xl h-[55vh] overflow-auto bg-zinc-900 border-4 border-white rounded-lg p-3 shadow-xl">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="font-pixel text-white text-xl">Marchand</h2>
+          </div>
+          <MarchandPage onClose={closeMerchant} />
+        </div>
+      </div>
+    )}
+    </>
   );
 }
