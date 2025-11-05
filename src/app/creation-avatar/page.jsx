@@ -14,7 +14,11 @@ export default function AvatarCreationPage() {
 
   // Fonction pour obtenir le chemin de l'image de l'avatar
   const getAvatarImagePath = () => {
-    return `/avatars/${race}_${sexe}.png`;
+    // Convertir la race et le sexe pour correspondre au format des fichiers
+    // Format des fichiers : Race-Sexe.png (ex: Humain-male.png)
+    const raceCapitalized = race.charAt(0).toUpperCase() + race.slice(1);
+    const sexeCapitalized = sexe.charAt(0).toUpperCase() + sexe.slice(1);
+    return `/asset/${raceCapitalized}-${sexeCapitalized}.png`;
   };
 
   // Réinitialiser l'erreur quand on change de race ou sexe
@@ -106,12 +110,14 @@ export default function AvatarCreationPage() {
               {!imageError ? (
                 <div className="w-full h-full relative">
                   <Image
+                    key={`${race}-${sexe}`}
                     src={getAvatarImagePath()}
                     alt={`Avatar ${race} ${sexe}`}
                     fill
                     className="object-contain"
                     onError={() => setImageError(true)}
                     sizes="256px"
+                    unoptimized
                   />
                 </div>
               ) : (
