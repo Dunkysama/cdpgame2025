@@ -36,6 +36,7 @@ export default function QuizLayout({
   visualCharacterWidth,
   visualCharacterPositions,
   lives,
+  maxLives = 3,
   coinCount,
   heartFullSrc,
   heartEmptySrc,
@@ -151,7 +152,7 @@ export default function QuizLayout({
           {typeof lives === "number" && heartFullSrc && heartEmptySrc && (
             <div className="absolute top-2 left-2 flex flex-col items-start gap-2 pointer-events-none">
               <div className="flex items-center gap-1">
-                {[0, 1, 2].map((i) => (
+                {Array.from({ length: Math.max(3, maxLives) }, (_, i) => i).map((i) => (
                   <img
                     key={i}
                     src={i < lives ? heartFullSrc : heartEmptySrc}

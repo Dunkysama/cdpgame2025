@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import QuizLayout from "@/app/components/QuizLayout";
 import globalPlaine from "@/asset/global__plaine.png";
 import plateforme from "@/asset/plateforme.png";
@@ -18,7 +19,13 @@ const QUIZ_CONFIG = {
   MAX_SCORE: 8,
 };
 
+// Configuration des effets
+const MAX_LIVES = 3;
+const TIMER_BONUS_SECONDS = 10;
+const TIMER_MAX = 30;
+
 export default function GlobalQuizPage() {
+  const router = useRouter();
   // Charger toutes les questions depuis le JSON
   const allQuestions = useMemo(() => globalQuestionsData.questions, []);
   const bonusQuestions = useMemo(() => globalQuestionsData.bonusQuestions, []);
@@ -35,9 +42,18 @@ export default function GlobalQuizPage() {
   const [answered, setAnswered] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [score, setScore] = useState(0);
+  const [gold, setGold] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const [timer, setTimer] = useState(15);
   const [lives, setLives] = useState(3);
+  const [maxLives, setMaxLives] = useState(3);
+
+  // Redirection Game Over quand il n'y a plus de vies
+  useEffect(() => {
+    if (lives <= 0) {
+      router.push("/game-over");
+    }
+  }, [lives, router]);
   const [tokens, setTokens] = useState(1);
   const [isMerchantOpen, setIsMerchantOpen] = useState(false);
   const [hasVisitedMerchant, setHasVisitedMerchant] = useState(false);
@@ -101,12 +117,27 @@ export default function GlobalQuizPage() {
     setTimer(15);
   }, [currentQuestion]);
 
+  // Initialiser l'or depuis localStorage au montage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedGold = localStorage.getItem("playerGold");
+      if (savedGold) {
+        setGold(parseInt(savedGold, 10) || 0);
+      } else {
+        setGold(0);
+        localStorage.setItem("playerGold", "0");
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (answered) return; // stop countdown after answering
     if (isMerchantOpen) return; // pause countdown while merchant modal is open
     if (score >= QUIZ_CONFIG.MAX_SCORE) return; // stop countdown if quiz is finished
     if (timer <= 0) {
+      // Temps écoulé : marquer comme répondu et perdre une vie
       setAnswered(true);
+      setLives((l) => Math.max(0, l - 1));
       setTimeout(() => {
         // Temps écoulé : remplacer la question par une nouvelle
         if (score < QUIZ_CONFIG.MAX_SCORE && currentQuestion) {
@@ -160,6 +191,15 @@ export default function GlobalQuizPage() {
         }
         return nextScore;
       });
+
+      // Récompense : +10 pièces d'or par bonne réponse
+      setGold((g) => {
+        const updated = g + 10;
+        if (typeof window !== "undefined") {
+          localStorage.setItem("playerGold", String(updated));
+        }
+        return updated;
+      });
       playSuccessTone();
       
       // Si on atteint 8 bonnes réponses, le quiz est terminé - NE PAS remplacer la question
@@ -189,6 +229,35 @@ export default function GlobalQuizPage() {
         });
       }, 1000);
     }
+  };
+
+  // Appliquer les effets d'achat depuis le marchand
+  const applyItemEffect = (itemId) => {
+    switch (itemId) {
+      case "coeur":
+        setLives((l) => {
+          // À plein, acheter un cœur augmente la capacité ET la vie
+          if (l >= maxLives) {
+            setMaxLives((m) => m + 1);
+            return l + 1;
+          }
+          return Math.min(maxLives, l + 1);
+        });
+        break;
+      case "tokenIndice": // Potion
+        setLives(maxLives);
+        break;
+      case "sablier":
+        setTimer((t) => Math.min(TIMER_MAX, t + TIMER_BONUS_SECONDS));
+        break;
+      default:
+        break;
+    }
+  };
+
+  // Synchroniser la monnaie affichée quand le marchand la modifie
+  const handleGoldChange = (newGold) => {
+    setGold(newGold);
   };
 
   // Quand le marchand se ferme après la 8e bonne réponse, le quiz est terminé
@@ -297,7 +366,8 @@ export default function GlobalQuizPage() {
       visualCharacterStartLeft="50%"
       visualCharacterPositions={characterPositions}
       lives={lives}
-      coinCount={score}
+      maxLives={maxLives}
+      coinCount={gold}
       heartFullSrc={heart.src}
       heartEmptySrc={heartless.src}
       coinSrc={coin.src}
@@ -320,7 +390,7 @@ export default function GlobalQuizPage() {
           <div className="flex items-center justify-between mb-2">
             <h2 className="font-pixel text-white text-xl">Marchand</h2>
           </div>
-          <MarchandPage onClose={closeMerchant} />
+          <MarchandPage onClose={closeMerchant} onApplyItem={applyItemEffect} onGoldChange={handleGoldChange} />
         </div>
       </div>
     )}
