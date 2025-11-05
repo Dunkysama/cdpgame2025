@@ -53,7 +53,6 @@ const handleSubmit = async (e) => {
       <div className="w-full max-w-md px-6 relative z-10">
         {/* En-tête */}
         <div className="mb-8 text-center">
-          <Button />
           <h1 className="text-3xl font-bold font-pixel text-white">
             CONNEXION
           </h1>
