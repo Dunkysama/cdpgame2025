@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import QuizLayout from "@/app/components/QuizLayout";
 import globalPlaine from "@/asset/global__plaine.png";
 import plateforme from "@/asset/plateforme.png";
@@ -10,162 +10,27 @@ import heartless from "@/asset/heartless.jpg";
 import coin from "@/asset/coin.jpg";
 import token from "@/asset/token.png";
 import MarchandPage from "@/app/marchand/page.jsx";
+import globalQuestionsData from "@/data/global-questions.json";
+
+// Configuration du quiz
+const QUIZ_CONFIG = {
+  MAX_SCORE: 8,
+};
 
 export default function GlobalQuizPage() {
-  const initialQuestions = useMemo(
-    () => [
-      // 🔹 Niveau Facile (5 questions)
-      {
-        level: "facile",
-        question: "Qui est considéré comme l'inventeur du World Wide Web (WWW) ?",
-        options: ["Tim Berners-Lee", "Bill Gates", "Mark Zuckerberg", "Steve Jobs"],
-        correctIndex: 0,
-        hint: "Il travaillait au CERN.",
-      },
-      {
-        level: "facile",
-        question: "Quel est le moteur de recherche le plus utilisé dans le monde ?",
-        options: ["Google", "Bing", "Yahoo", "DuckDuckGo"],
-        correctIndex: 0,
-        hint: "Son nom est devenu un verbe.",
-      },
-      {
-        level: "facile",
-        question: "Que signifie \"Wi-Fi\" ?",
-        options: ["Wireless Fidelity", "Wireless Fiber", "Web Frequency Interface", "Wide Field Internet"],
-        correctIndex: 0,
-        hint: "Souvent utilisé pour se connecter sans fil.",
-      },
-      {
-        level: "facile",
-        question: "Quel langage a été conçu pour rendre les pages web interactives ?",
-        options: ["JavaScript", "HTML", "SQL", "C++"],
-        correctIndex: 0,
-        hint: "Abrégé par \"JS\".",
-      },
-      {
-        level: "facile",
-        question: "Quel est le système d’exploitation mobile de Google ?",
-        options: ["Android", "iOS", "Windows Mobile", "HarmonyOS"],
-        correctIndex: 0,
-        hint: "Son symbole est un petit robot vert.",
-      },
+  // Charger toutes les questions depuis le JSON
+  const allQuestions = useMemo(() => globalQuestionsData.questions, []);
+  const bonusQuestions = useMemo(() => globalQuestionsData.bonusQuestions, []);
 
-      // 🔹 Niveau Moyen (5 questions)
-      {
-        level: "moyen",
-        question: "Quel est le nom du premier programme informatique au monde ?",
-        options: [
-          "Le programme de la machine analytique d’Ada Lovelace",
-          "MS-DOS",
-          "Fortran",
-          "Unix",
-        ],
-        correctIndex: 0,
-        hint: "Écrit par une femme au 19e siècle.",
-      },
-      {
-        level: "moyen",
-        question: "Quelle entreprise a été fondée en premier ?",
-        options: ["IBM", "Microsoft", "Apple", "Google"],
-        correctIndex: 0,
-        hint: "Fondée en 1911.",
-      },
-      {
-        level: "moyen",
-        question: "Quelle unité mesure la rapidité de transfert des données sur un réseau ?",
-        options: ["Mbps (Megabits par seconde)", "RPM", "Hz", "KBH"],
-        correctIndex: 0,
-        hint: "Utilisée pour la vitesse Internet.",
-      },
-      {
-        level: "moyen",
-        question: "Quel est le nom du robot automatique envoyé sur Mars par la NASA en 2021 ?",
-        options: ["Perseverance", "Curiosity", "Spirit", "Opportunity"],
-        correctIndex: 0,
-        hint: "Son nom évoque la ténacité.",
-      },
-      {
-        level: "moyen",
-        question: "Quel protocole est utilisé pour sécuriser les échanges sur un site web ?",
-        options: ["HTTPS", "FTP", "SMTP", "TCP"],
-        correctIndex: 0,
-        hint: "Représenté par un cadenas dans le navigateur.",
-      },
+  // Sélectionner une question aléatoire au début
+  const getRandomQuestion = () => {
+    if (allQuestions.length === 0) return null;
+    return allQuestions[Math.floor(Math.random() * allQuestions.length)];
+  };
 
-      // 🔹 Niveau Difficile (5 questions)
-      {
-        level: "difficile",
-        question: "Quel était le surnom du premier réseau lié à Internet ?",
-        options: ["ARPANET", "NETSPACE", "COBRANET", "WEBFIRST"],
-        correctIndex: 0,
-        hint: "Créé par l’armée américaine.",
-      },
-      {
-        level: "difficile",
-        question: "Quelle entreprise a popularisé le concept du \"cloud computing\" avec sa plateforme AWS ?",
-        options: ["Amazon", "Microsoft", "Google", "IBM"],
-        correctIndex: 0,
-        hint: "À l’origine, c’était une librairie en ligne.",
-      },
-      {
-        level: "difficile",
-        question: "Quelle est la première cryptomonnaie apparue en 2009 ?",
-        options: ["Bitcoin", "Ethereum", "Litecoin", "Monero"],
-        correctIndex: 0,
-        hint: "Créée par Satoshi Nakamoto.",
-      },
-      {
-        level: "difficile",
-        question: "Quel fondateur de PayPal est aussi à l’origine de SpaceX ?",
-        options: ["Elon Musk", "Jeff Bezos", "Jack Dorsey", "Larry Page"],
-        correctIndex: 0,
-        hint: "Il dirige également Tesla.",
-      },
-      {
-        level: "difficile",
-        question: "Quelle est la méthode de chiffrement utilisée par HTTPS ?",
-        options: ["TLS (Transport Layer Security)", "MD5", "SHA-1", "DES"],
-        correctIndex: 0,
-        hint: "Son nom contient \"Transport\" et \"Security\".",
-      },
-    ], []);
-
-  // Questions bonus (hors des 8 déjà en place)
-  const bonusQuestions = useMemo(
-    () => [
-      {
-        level: "bonus",
-        question: "Quel langage est principalement utilisé pour le style des pages web ?",
-        options: ["CSS", "HTML", "Python", "C#"],
-        correctIndex: 0,
-        hint: "Couleurs, marges, police, positionnement…",
-      },
-      {
-        level: "bonus",
-        question: "Quelle base de données est de type NoSQL parmi ces choix ?",
-        options: ["MongoDB", "MySQL", "PostgreSQL", "SQLite"],
-        correctIndex: 0,
-        hint: "Documents au lieu de tables",
-      },
-      {
-        level: "bonus",
-        question: "Quelle entreprise développe le navigateur Chrome ?",
-        options: ["Google", "Mozilla", "Microsoft", "Apple"],
-        correctIndex: 0,
-        hint: "Android, Gmail, YouTube…",
-      },
-      {
-        level: "bonus",
-        question: "Que signifie ‘CPU’ ?",
-        options: ["Central Processing Unit", "Core Peripheral Unit", "Computer Power Unit", "Control Program Unit"],
-        correctIndex: 0,
-        hint: "Le cerveau de l’ordinateur",
-      },
-    ], []);
-
-  const [questions, setQuestions] = useState(initialQuestions);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // État du quiz - on garde toujours la même question actuelle jusqu'à ce qu'elle soit remplacée
+  const initialQuestion = getRandomQuestion();
+  const [currentQuestion, setCurrentQuestion] = useState(initialQuestion);
   const [answered, setAnswered] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [score, setScore] = useState(0);
@@ -175,30 +40,83 @@ export default function GlobalQuizPage() {
   const [tokens, setTokens] = useState(1);
   const [isMerchantOpen, setIsMerchantOpen] = useState(false);
   const [hasVisitedMerchant, setHasVisitedMerchant] = useState(false);
+  const [usedQuestionIds, setUsedQuestionIds] = useState(new Set(initialQuestion ? [initialQuestion.id] : []));
+  const usedQuestionIdsRef = useRef(new Set(initialQuestion ? [initialQuestion.id] : []));
+
+  // Synchroniser le ref avec l'état
+  useEffect(() => {
+    usedQuestionIdsRef.current = usedQuestionIds;
+  }, [usedQuestionIds]);
+
+  // Trouver une nouvelle question aléatoire dans le JSON (non utilisée)
+  const findNewRandomQuestion = useCallback((currentQuestionId, usedIds) => {
+    // Trouver toutes les questions qui ne sont pas déjà utilisées
+    const availableQuestions = allQuestions.filter(
+      (q) => !usedIds.has(q.id) && q.id !== currentQuestionId
+    );
+
+    if (availableQuestions.length > 0) {
+      const randomQuestion = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+      return randomQuestion;
+    }
+
+    // Si toutes les questions ont été utilisées, prendre n'importe quelle question différente
+    const allOtherQuestions = allQuestions.filter((q) => q.id !== currentQuestionId);
+    if (allOtherQuestions.length > 0) {
+      const randomQuestion = allOtherQuestions[Math.floor(Math.random() * allOtherQuestions.length)];
+      return randomQuestion;
+    }
+
+    return null;
+  }, [allQuestions]);
+
+  // Remplacer la question actuelle par une nouvelle du JSON
+  const replaceCurrentQuestion = useCallback(() => {
+    setCurrentQuestion((prevQuestion) => {
+      if (!prevQuestion) return prevQuestion;
+      
+      // Utiliser le ref pour avoir la valeur actuelle
+      const currentUsedIds = usedQuestionIdsRef.current;
+      const updated = new Set([...currentUsedIds, prevQuestion.id]);
+      const newQuestion = findNewRandomQuestion(prevQuestion.id, currentUsedIds);
+      
+      if (newQuestion) {
+        updated.add(newQuestion.id);
+        setUsedQuestionIds(updated);
+        setTimeout(() => {
+          setAnswered(false);
+          setSelectedIndex(null);
+        }, 0);
+        return newQuestion;
+      }
+      
+      setUsedQuestionIds(updated);
+      return prevQuestion;
+    });
+  }, [findNewRandomQuestion]);
 
   useEffect(() => {
     setShowHint(false);
     setTimer(15);
-  }, [currentIndex]);
+  }, [currentQuestion]);
 
   useEffect(() => {
     if (answered) return; // stop countdown after answering
     if (isMerchantOpen) return; // pause countdown while merchant modal is open
+    if (score >= QUIZ_CONFIG.MAX_SCORE) return; // stop countdown if quiz is finished
     if (timer <= 0) {
       setAnswered(true);
       setTimeout(() => {
-        if (currentIndex < questions.length - 1) {
-          setCurrentIndex((i) => i + 1);
-          setAnswered(false);
-          setSelectedIndex(null);
-          setTimer(15);
+        // Temps écoulé : remplacer la question par une nouvelle
+        if (score < QUIZ_CONFIG.MAX_SCORE && currentQuestion) {
+          replaceCurrentQuestion();
         }
       }, 1000);
       return;
     }
     const id = setTimeout(() => setTimer((t) => t - 1), 1000);
     return () => clearTimeout(id);
-  }, [timer, answered, currentIndex, isMerchantOpen]);
+  }, [timer, answered, isMerchantOpen, score, currentQuestion, replaceCurrentQuestion]);
 
   const playSuccessTone = () => {
     try {
@@ -217,56 +135,75 @@ export default function GlobalQuizPage() {
     } catch {}
   };
 
-  const currentQuestion = questions[currentIndex];
+  // Calculer si le quiz est terminé
+  const isQuizFinished = score >= QUIZ_CONFIG.MAX_SCORE;
 
   const handleAnswer = (index) => {
     if (isMerchantOpen) return;
     if (answered) return;
+    if (isQuizFinished) return; // Ne pas répondre si le quiz est terminé
+    if (!currentQuestion) return; // Ne pas répondre si pas de question
+    
     setSelectedIndex(index);
     const isCorrect = index === currentQuestion.correctIndex;
     setAnswered(true);
+    
     if (isCorrect) {
-      // Incrémenter le score et ouvrir le marchand à la 8e bonne réponse
+      // Bonne réponse : incrémenter le score
       setScore((s) => {
-        const nextScore = s + 1;
-        if (nextScore === 8 && !hasVisitedMerchant) {
+        const nextScore = Math.min(s + 1, QUIZ_CONFIG.MAX_SCORE);
+        // Ouvrir le marchand à la 8e bonne réponse
+        if (nextScore === QUIZ_CONFIG.MAX_SCORE && !hasVisitedMerchant) {
           setIsMerchantOpen(true);
           setHasVisitedMerchant(true);
         }
         return nextScore;
       });
       playSuccessTone();
+      
+      // Si on atteint 8 bonnes réponses, le quiz est terminé - NE PAS remplacer la question
+      setTimeout(() => {
+        setScore((currentScore) => {
+          const finalScore = Math.min(currentScore, QUIZ_CONFIG.MAX_SCORE);
+          if (finalScore >= QUIZ_CONFIG.MAX_SCORE) {
+            return finalScore; // Quiz terminé, ne rien faire
+          }
+          // Sinon, remplacer la question par une nouvelle du JSON
+          replaceCurrentQuestion();
+          return finalScore;
+        });
+      }, 1000);
     } else {
+      // Mauvaise réponse : remplacer la question actuelle par une nouvelle du JSON
+      // Le score n'est PAS incrémenté
       setLives((l) => Math.max(0, l - 1));
+      setTimeout(() => {
+        setScore((currentScore) => {
+          if (currentScore >= QUIZ_CONFIG.MAX_SCORE) {
+            return currentScore; // Quiz terminé, ne rien faire
+          }
+          // Remplacer la question par une nouvelle du JSON
+          replaceCurrentQuestion();
+          return currentScore;
+        });
+      }, 1000);
     }
-    setTimeout(() => {
-      // Ne pas avancer la question si le marchand est ouvert
-      if (isMerchantOpen) return;
-      if (currentIndex < questions.length - 1) {
-        setCurrentIndex((i) => i + 1);
-        setAnswered(false);
-        setSelectedIndex(null);
-      }
-    }, 1000);
   };
 
-  // Reprendre le quiz quand le marchand se ferme après la 8e bonne réponse
+  // Quand le marchand se ferme après la 8e bonne réponse, le quiz est terminé
   useEffect(() => {
-    if (!isMerchantOpen && hasVisitedMerchant && answered) {
-      if (currentIndex < questions.length - 1) {
-        setCurrentIndex((i) => i + 1);
-        setAnswered(false);
-        setSelectedIndex(null);
-        setTimer(15);
-      }
+    if (!isMerchantOpen && hasVisitedMerchant && score >= QUIZ_CONFIG.MAX_SCORE) {
+      // Quiz terminé, ne rien faire de plus
+      return;
     }
-  }, [isMerchantOpen]);
+  }, [isMerchantOpen, hasVisitedMerchant, score]);
 
   // Consommer un token pour révéler l'indice
   const handleRevealHint = () => {
     if (answered) return; // ne pas révéler après avoir répondu
     if (showHint) return; // déjà visible
     if (tokens <= 0) return; // pas de token
+    if (isQuizFinished) return; // ne pas révéler si le quiz est terminé
     setTokens((t) => Math.max(0, t - 1));
     setShowHint(true);
   };
@@ -276,20 +213,17 @@ export default function GlobalQuizPage() {
     if (answered) return; // éviter de changer après réponse
     if (tokens <= 0) return; // pas de token disponible
     if (!bonusQuestions.length) return; // aucune question bonus définie
+    if (isQuizFinished) return; // ne pas changer si le quiz est terminé
 
     // Choisir une question bonus aléatoire
     const nextBonus = bonusQuestions[Math.floor(Math.random() * bonusQuestions.length)];
 
-    // Remplacer la question à l'index courant
-    setQuestions((qs) => {
-      const copy = [...qs];
-      copy[currentIndex] = nextBonus;
-      return copy;
-    });
-
+    // Remplacer la question actuelle
+    setCurrentQuestion(nextBonus);
+    setShowHint(false);
+    
     // Consommer le token
     setTokens((t) => Math.max(0, t - 1));
-    setShowHint(false);
   };
 
   // Plateformes ordonnées du bas (top élevé) vers le haut (top faible)
@@ -341,18 +275,18 @@ export default function GlobalQuizPage() {
     <QuizLayout
       title="THÈME 6 – QUIZ GLOBAL (Culture Tech)"
       level={currentQuestion?.level}
-      question={currentQuestion.question}
-      options={currentQuestion.options}
-      correctIndex={currentQuestion.correctIndex}
+      question={currentQuestion?.question || ""}
+      options={currentQuestion?.options || []}
+      correctIndex={currentQuestion?.correctIndex ?? 0}
       selectedIndex={selectedIndex}
       answered={answered}
       onSelect={handleAnswer}
-      hint={currentQuestion.hint}
+      hint={currentQuestion?.hint || ""}
       showHint={showHint}
       onRevealHint={handleRevealHint}
-      score={score}
-      currentIndex={currentIndex}
-      total={questions.length}
+      score={Math.min(score, QUIZ_CONFIG.MAX_SCORE)}
+      currentIndex={0}
+      total={QUIZ_CONFIG.MAX_SCORE}
       visualImageSrc={globalPlaine.src}
       visualOverlayItems={platforms}
       visualCharacterSrc={elfFemelle.src}
@@ -370,13 +304,11 @@ export default function GlobalQuizPage() {
       tokens={tokens}
       onChangeQuestion={handleChangeQuestion}
       onNext={() => {
-        if (!answered) return;
-        setCurrentIndex((i) => i + 1);
-        setAnswered(false);
-        setSelectedIndex(null);
-        setTimer(15);
+        // Bouton désactivé car on ne passe plus à la question suivante
+        // On remplace toujours la question actuelle
+        return;
       }}
-      hasNext={currentIndex < questions.length - 1}
+      hasNext={false}
       timerSeconds={timer}
       timerTotalSeconds={15}
     />
