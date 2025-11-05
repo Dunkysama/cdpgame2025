@@ -18,7 +18,7 @@ export default function ButtonAbandonner({ className = "", ...props }) {
     <Button
       onClick={handleAbandon}
       variant="primary"
-      className={`bg-red-600! hover:bg-red-500 focus:ring-red-400 text-white! ${className}`}
+      className={`bg-red-600! hover:bg-red-500 cursor-pointer focus:ring-red-400 text-white! ${className}`}
       {...props}
     >
       Abandonner

@@ -12,6 +12,7 @@ import token from "@/asset/token.png";
 import MarchandPage from "@/app/marchand/page.jsx";
 import globalQuestionsData from "@/data/global-questions.json";
 
+
 // Configuration du quiz
 const QUIZ_CONFIG = {
   MAX_SCORE: 8,

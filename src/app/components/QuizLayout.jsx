@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import changeIcon from "@/asset/change.png";
+import BouttonAbandonner from "@/app/components/buttonAbandonner";
 
 export default function QuizLayout({
   title,
@@ -177,6 +178,11 @@ export default function QuizLayout({
               )}
             </div>
           )}
+
+          {/* Bouton Abandonner en haut à droite */}
+          <div className="absolute top-2 right-2">
+            <BouttonAbandonner />
+          </div>
         </div>
 
         {/* Bandeau 'Question' au-dessus des réponses, centré, avec traits latéraux */}
@@ -251,6 +257,8 @@ export default function QuizLayout({
           )}
 
           {/* Score final, sans bouton retour ni bouton suivant */}
+
+          
           <div className="mt-4 flex items-center justify-end">
             {hasNext ? (
               <div className="font-pixel text-[10px] md:text-xs text-black/60">&nbsp;</div>
