@@ -255,7 +255,7 @@ export default function QuizLayout({
             {hasNext ? (
               <div className="font-pixel text-[10px] md:text-xs text-black/60">&nbsp;</div>
             ) : (
-              <div className="font-pixel text-xs">Quiz terminé · Score {score} / {total}</div>
+              <div className="font-pixel text-xs">Score {score} / {total}</div>
             )}
           </div>
         </div>

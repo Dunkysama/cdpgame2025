@@ -103,6 +103,8 @@ body {
   animation: fadeIn 0.3s ease-out forwards;
 }
 
+/* Animation feu d'artifice - générée dynamiquement */
+
 .flashlight-overlay {
   position: fixed;
   top: 0;
