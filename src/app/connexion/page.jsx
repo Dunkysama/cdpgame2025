@@ -5,19 +5,47 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
+const router = useRouter();
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
+const [isLoading, setIsLoading] = useState(false);
+const [showPassword, setShowPassword] = useState(false);
+const [error, setError] = useState(null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    // Redirection vers la page d'accueil
-    router.push("/");
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (isLoading) return;
+  setIsLoading(true);
+  setError(null);
+
+  try {
+    const res = await fetch("/api/connexion", {  // 👈 ou /api/connexion si tu renomme le dossier
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email.trim(), password }),
+      cache: "no-store",
+    });
+
+    const ct = res.headers.get("content-type") || "";
+    const payload = ct.includes("application/json") ? await res.json() : await res.text();
+
+    if (!res.ok) {
+      const msg = typeof payload === "string" ? payload : payload?.error;
+      throw new Error(msg || "Nom d'utilisateur ou mot de passe incorrect");
+    }
+
+    if (typeof payload === "object" && payload?.ok === true) {
+      router.push("/");
+    } else {
+      throw new Error(payload?.error || "Nom d'utilisateur ou mot de passe incorrect");
+    }
+  } catch (err) {
+    setError(err.message || "Erreur de connexion");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <div className="flex min-h-screen items-center justify-center font-sans relative">
@@ -133,6 +161,12 @@ export default function LoginPage() {
             {isLoading ? "Connexion..." : "Se connecter"}
           </button>
         </form>
+
+        {error && (
+          <div className="mt-4 text-center">
+            <p className="text-xs font-pixel text-red-400">{String(error)}</p>
+          </div>
+        )}
 
         {/* Lien vers l'inscription */}
         <div className="mt-6 text-center">
