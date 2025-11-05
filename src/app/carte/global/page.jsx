@@ -106,20 +106,10 @@ export default function GlobalQuizPage() {
     if (score >= QUIZ_CONFIG.MAX_SCORE) return; // stop countdown if quiz is finished
     if (timer <= 0) {
       setAnswered(true);
-      // Enregistrer le temps de réponse (temps écoulé = 15 secondes)
-      setResponseTimes(prev => [...prev, 15]);
       setTimeout(() => {
         // Temps écoulé : remplacer la question par une nouvelle
         if (score < QUIZ_CONFIG.MAX_SCORE && currentQuestion) {
           replaceCurrentQuestion();
-        if (currentIndex < questions.length - 1) {
-          setCurrentIndex((i) => i + 1);
-          setAnswered(false);
-          setSelectedIndex(null);
-          setTimer(15);
-        } else {
-          // Quiz terminé
-          setQuizCompleted(true);
         }
       }, 1000);
       return;
@@ -157,10 +147,6 @@ export default function GlobalQuizPage() {
     setSelectedIndex(index);
     const isCorrect = index === currentQuestion.correctIndex;
     setAnswered(true);
-    
-    // Enregistrer le temps de réponse (temps écoulé depuis le début de la question)
-    const responseTime = 15 - timer; // Temps restant depuis le début
-    setResponseTimes(prev => [...prev, responseTime]);
     
     if (isCorrect) {
       // Bonne réponse : incrémenter le score
@@ -211,27 +197,6 @@ export default function GlobalQuizPage() {
       return;
     }
   }, [isMerchantOpen, hasVisitedMerchant, score]);
-    setTimeout(() => {
-      if (currentIndex < questions.length - 1) {
-        setCurrentIndex((i) => i + 1);
-        setAnswered(false);
-        setSelectedIndex(null);
-      } else {
-        // Quiz terminé
-        setQuizCompleted(true);
-      }
-    }, 1000);
-  };
-
-  // Enregistrer les résultats du quiz quand il est terminé
-  useEffect(() => {
-    if (quizCompleted) {
-      // Une victoire signifie avoir terminé le quiz avec au moins une vie restante
-      const isWin = lives > 0;
-      recordQuizCompletion(score, questions.length, responseTimes, isWin);
-      setQuizCompleted(false); // Réinitialiser pour éviter les appels multiples
-    }
-  }, [quizCompleted, score, questions.length, lives, responseTimes]);
 
   // Consommer un token pour révéler l'indice
   const handleRevealHint = () => {
