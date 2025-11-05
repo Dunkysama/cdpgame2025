@@ -1,7 +1,7 @@
 // src/connexion/connexion_back.js
 import bcrypt from "bcryptjs";
-// Adapte ce chemin si besoin : dans ton screen, db.js est sous src/inscription/db.js
-import pool from "@/inscription/db";
+// db.js est situé sous src/app/inscription/db.js
+import pool from "@/app/inscription/db";
 
 export async function loginUser({ username, password }) {
   try {
