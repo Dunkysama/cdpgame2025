@@ -317,7 +317,7 @@ export default function ProfilPage() {
                         }}
                       />
                     </div>
-                    <div className="relative z-10 bg-zinc-900/80 rounded-lg px-2 py-1 text-center">
+                    <div className="relative z-20 bg-zinc-900/80 rounded-lg px-2 py-1 text-center">
                       <p className="text-[8px] font-pixel text-white">
                         Badge
                       </p>
