@@ -9,6 +9,7 @@ import heart from "@/asset/heart.jpg";
 import heartless from "@/asset/heartless.jpg";
 import coin from "@/asset/coin.jpg";
 import token from "@/asset/token.png";
+import { recordQuizCompletion } from "@/app/utils/badges";
 
 export default function GlobalQuizPage() {
   const initialQuestions = useMemo(
@@ -123,6 +124,8 @@ export default function GlobalQuizPage() {
   const [timer, setTimer] = useState(15);
   const [lives, setLives] = useState(3);
   const [tokens, setTokens] = useState(1);
+  const [responseTimes, setResponseTimes] = useState([]); // Temps de réponse pour chaque question
+  const [quizCompleted, setQuizCompleted] = useState(false);
 
   useEffect(() => {
     setShowHint(false);
@@ -133,12 +136,17 @@ export default function GlobalQuizPage() {
     if (answered) return; // stop countdown after answering
     if (timer <= 0) {
       setAnswered(true);
+      // Enregistrer le temps de réponse (temps écoulé = 15 secondes)
+      setResponseTimes(prev => [...prev, 15]);
       setTimeout(() => {
         if (currentIndex < questions.length - 1) {
           setCurrentIndex((i) => i + 1);
           setAnswered(false);
           setSelectedIndex(null);
           setTimer(15);
+        } else {
+          // Quiz terminé
+          setQuizCompleted(true);
         }
       }, 1000);
       return;
@@ -171,6 +179,11 @@ export default function GlobalQuizPage() {
     setSelectedIndex(index);
     const isCorrect = index === currentQuestion.correctIndex;
     setAnswered(true);
+    
+    // Enregistrer le temps de réponse (temps écoulé depuis le début de la question)
+    const responseTime = 15 - timer; // Temps restant depuis le début
+    setResponseTimes(prev => [...prev, responseTime]);
+    
     if (isCorrect) {
       setScore((s) => s + 1);
       playSuccessTone();
@@ -182,9 +195,22 @@ export default function GlobalQuizPage() {
         setCurrentIndex((i) => i + 1);
         setAnswered(false);
         setSelectedIndex(null);
+      } else {
+        // Quiz terminé
+        setQuizCompleted(true);
       }
     }, 1000);
   };
+
+  // Enregistrer les résultats du quiz quand il est terminé
+  useEffect(() => {
+    if (quizCompleted) {
+      // Une victoire signifie avoir terminé le quiz avec au moins une vie restante
+      const isWin = lives > 0;
+      recordQuizCompletion(score, questions.length, responseTimes, isWin);
+      setQuizCompleted(false); // Réinitialiser pour éviter les appels multiples
+    }
+  }, [quizCompleted, score, questions.length, lives, responseTimes]);
 
   // Consommer un token pour révéler l'indice
   const handleRevealHint = () => {
