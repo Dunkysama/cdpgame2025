@@ -10,6 +10,7 @@ export default function HomePage() {
   const [selectedPseudo, setSelectedPseudo] = useState(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [avatarToDelete, setAvatarToDelete] = useState(null);
+  const [imageErrors, setImageErrors] = useState({});
   const router = useRouter();
 
   // Charger les avatars depuis localStorage au montage
