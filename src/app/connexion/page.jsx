@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-const [username, setUsername] = useState("");
+const router = useRouter();
+const [email, setEmail] = useState("");
 const [password, setPassword] = useState("");
 const [isLoading, setIsLoading] = useState(false);
 const [showPassword, setShowPassword] = useState(false);
@@ -18,10 +19,10 @@ const handleSubmit = async (e) => {
   setError(null);
 
   try {
-    const res = await fetch("/api/connection", {  // 👈 ou /api/connexion si tu renomme le dossier
+    const res = await fetch("/api/connexion", {  // 👈 ou /api/connexion si tu renomme le dossier
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: username.trim(), password }),
+      body: JSON.stringify({ email: email.trim(), password }),
       cache: "no-store",
     });
 
@@ -160,6 +161,12 @@ const handleSubmit = async (e) => {
             {isLoading ? "Connexion..." : "Se connecter"}
           </button>
         </form>
+
+        {error && (
+          <div className="mt-4 text-center">
+            <p className="text-xs font-pixel text-red-400">{String(error)}</p>
+          </div>
+        )}
 
         {/* Lien vers l'inscription */}
         <div className="mt-6 text-center">

@@ -7,15 +7,15 @@ export async function registerUser({ email, username, password }) {
       return { status: 400, body: { error: "Champs manquants" } };
     }
 
-    // email/username déjà pris ?
+    // email déjà pris ?
     const exists = await pool.query(
-      "SELECT 1 FROM Utilisateurs WHERE email = $1 OR nom_utilisateur = $2",
-      [email, username]
+      "SELECT 1 FROM Utilisateurs WHERE email = $1",
+      [email]
     );
     if (exists.rows.length > 0) {
       return {
         status: 409,
-        body: { error: "Email ou nom d'utilisateur déjà utilisé" },
+        body: { error: "Email déjà utilisé" },
       };
     }
 
