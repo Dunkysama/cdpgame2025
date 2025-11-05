@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { getUnlockedBadges, getSelectedBadge, selectBadge, BADGES } from "@/app/utils/badges";
+import DeconnexionButton from "../components/DeconnexionButton";
 
 export default function ProfilPage() {
   const [avatars, setAvatars] = useState([]);
@@ -351,6 +352,7 @@ export default function ProfilPage() {
                 Modifier mes info
               </button>
             </div>
+            <DeconnexionButton />
           </div>
         </div>
 
