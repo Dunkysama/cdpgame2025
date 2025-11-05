@@ -10,6 +10,7 @@ export default function HomePage() {
   const [selectedPseudo, setSelectedPseudo] = useState(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [avatarToDelete, setAvatarToDelete] = useState(null);
+  const [imageErrors, setImageErrors] = useState({});
   const router = useRouter();
 
   // Charger les avatars depuis localStorage au montage
@@ -35,7 +36,15 @@ export default function HomePage() {
   };
 
   const getAvatarImagePath = (avatar) => {
-    return `/avatars/${avatar.race}_${avatar.sexe}.png`;
+    // Si l'avatar a déjà un imagePath sauvegardé, l'utiliser
+    if (avatar.imagePath) {
+      return avatar.imagePath;
+    }
+    // Sinon, construire le chemin avec le nouveau format
+    // Format des fichiers : Race-Sexe.png (ex: Humain-male.png)
+    const raceCapitalized = (avatar.race || 'humain').charAt(0).toUpperCase() + (avatar.race || 'humain').slice(1);
+    const sexeCapitalized = (avatar.sexe || 'male').charAt(0).toUpperCase() + (avatar.sexe || 'male').slice(1);
+    return `/asset/${raceCapitalized}-${sexeCapitalized}.png`;
   };
 
   const handleDeleteClick = (avatar, index, e) => {
@@ -91,9 +100,20 @@ export default function HomePage() {
       <div className="w-full max-w-2xl px-6 relative z-10">
         {/* Titre */}
         <div className="mb-12 text-center">
-          <h1 className="text-4xl font-bold font-pixel text-white mb-8">
-            VOS AVATARS
-          </h1>
+          <div className="flex justify-between items-center mb-8">
+            <div className="flex-1"></div>
+            <h1 className="text-4xl font-bold font-pixel text-white flex-1">
+              VOS AVATARS
+            </h1>
+            <div className="flex-1 flex justify-end">
+              <Link
+                href="/profil"
+                className="rounded-lg font-pixel bg-zinc-900 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-zinc-800 border-2 border-transparent hover:border-white"
+              >
+                PROFIL
+              </Link>
+            </div>
+          </div>
         </div>
 
         {/* Section Pseudo */}
@@ -115,16 +135,23 @@ export default function HomePage() {
                     alt={`Avatar ${avatar.race} ${avatar.sexe}`}
                     fill
                     className="object-contain"
+                    unoptimized
                     onError={(e) => {
+                      setImageErrors(prev => ({ ...prev, [index]: true }));
                       e.target.style.display = 'none';
                     }}
+                    onLoad={() => {
+                      setImageErrors(prev => ({ ...prev, [index]: false }));
+                    }}
                   />
-                  {/* Placeholder si l'image n'existe pas */}
-                  <div className="absolute inset-0 flex items-center justify-center bg-zinc-800">
-                    <div className="text-center">
-                      <div className="text-3xl mb-1">🎮</div>
+                  {/* Placeholder si l'image n'existe pas ou n'a pas encore chargé */}
+                  {imageErrors[index] !== false && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-zinc-800 pointer-events-none z-0">
+                      <div className="text-center">
+                        <div className="text-3xl mb-1">🎮</div>
+                      </div>
                     </div>
-                  </div>
+                  )}
                   {/* Bouton de suppression */}
                   <button
                     onClick={(e) => handleDeleteClick(avatar, index, e)}
@@ -180,14 +207,33 @@ export default function HomePage() {
         </div>
 
         {/* Bouton Jouer */}
-        <div className="flex justify-center mt-12">
+        <div className="flex flex-col gap-4 justify-center mt-12">
           <button
             onClick={handlePlay}
             disabled={!selectedPseudo}
-            className="w-full max-w-md rounded-lg font-pixel bg-zinc-900 px-8 py-6 text-lg font-semibold text-white transition-colors hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-zinc-900"
+            className="w-full max-w-md rounded-lg font-pixel bg-zinc-900 px-8 py-6 text-lg font-semibold text-white transition-colors hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-zinc-900 mx-auto"
           >
             JOUER
           </button>
+
+          <Link
+            href="/furie-sanguinaire"
+            className="w-full max-w-md rounded-lg font-pixel bg-zinc-900 px-8 py-6 text-lg font-semibold text-white transition-colors hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 mx-auto text-center block"
+          >
+            FURIE
+          </Link>
+          <Link
+            href="/code-complet"
+            className="w-full max-w-md rounded-lg font-pixel bg-zinc-900 px-8 py-6 text-lg font-semibold text-white transition-colors hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 mx-auto text-center block"
+          >
+            SORT
+          </Link>
+          <Link
+            href="/reconstruire-epee"
+            className="w-full max-w-md rounded-lg font-pixel bg-zinc-900 px-8 py-6 text-lg font-semibold text-white transition-colors hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 mx-auto text-center block"
+          >
+            ÉPÉE
+          </Link>
         </div>
 
         {/* Popup de confirmation de suppression */}
