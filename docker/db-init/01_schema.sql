@@ -7,6 +7,7 @@ CREATE TABLE Utilisateurs(
    mot_de_passe VARCHAR(128)  NOT NULL,
    nom_utilisateur VARCHAR(128)  NOT NULL,
    date_inscription TIMESTAMP,
+   chemin_photo_de_profil DEFAULT '/avatars/humain_male.png';
    PRIMARY KEY(id_utilisateur),
    UNIQUE(email)
 );
