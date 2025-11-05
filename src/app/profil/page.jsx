@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { getUnlockedBadges, getSelectedBadge, selectBadge, BADGES } from "@/app/utils/badges";
 
 export default function ProfilPage() {
   const [avatars, setAvatars] = useState([]);
@@ -17,6 +18,8 @@ export default function ProfilPage() {
   const [editConfirmPassword, setEditConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [unlockedBadges, setUnlockedBadges] = useState([]);
+  const [selectedBadgeId, setSelectedBadgeId] = useState(null);
 
   // Charger les données depuis localStorage au montage
   useEffect(() => {
@@ -52,6 +55,14 @@ export default function ProfilPage() {
           console.error("Erreur lors du chargement des avatars:", e);
         }
       }
+
+      // Charger les badges débloqués
+      const badges = getUnlockedBadges();
+      setUnlockedBadges(badges);
+
+      // Charger le badge sélectionné
+      const selected = getSelectedBadge();
+      setSelectedBadgeId(selected);
     }
   }, []);
 
@@ -125,12 +136,17 @@ export default function ProfilPage() {
     return `/avatars/${avatar.race}_${avatar.sexe}.png`;
   };
 
-  // Badges factices pour l'instant (à remplacer par de vrais badges plus tard)
-  const badges = [
-    { id: 1, name: "Badge 1" },
-    { id: 2, name: "Badge 2" },
-    { id: 3, name: "Badge 3" },
-  ];
+  const handleBadgeClick = (badgeId) => {
+    if (selectedBadgeId === badgeId) {
+      // Désélectionner le badge
+      selectBadge(null);
+      setSelectedBadgeId(null);
+    } else {
+      // Sélectionner le badge
+      selectBadge(badgeId);
+      setSelectedBadgeId(badgeId);
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center font-sans relative">
@@ -176,6 +192,22 @@ export default function ProfilPage() {
                     <div className="text-4xl">👤</div>
                   </div>
                 )}
+                {/* Badge sélectionné en miniature (bas droite) */}
+                {selectedBadgeId && (() => {
+                  const badge = Object.values(BADGES).find(b => b.id === selectedBadgeId);
+                  return badge ? (
+                    <div className="absolute bottom-0 right-0 w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white bg-zinc-900 flex items-center justify-center overflow-hidden">
+                      <Image
+                        src={badge.image}
+                        alt={badge.name}
+                        width={40}
+                        height={40}
+                        className="object-contain"
+                        unoptimized
+                      />
+                    </div>
+                  ) : null;
+                })()}
               </div>
             </div>
 
@@ -198,19 +230,65 @@ export default function ProfilPage() {
         <div className="mt-8 mb-8 pb-8 border-b-2 border-zinc-700">
           <div className="flex flex-col md:flex-row items-start gap-6">
             <h3 className="text-xl font-bold font-pixel text-white md:w-32 flex-shrink-0">
-              Badge
+              Badges
             </h3>
-            <div className="flex mt-8 ml-20 gap-20 flex-wrap">
-              {badges.map((badge) => (
-                <div
-                  key={badge.id}
-                  className="w-24 h-24 rounded-full border-2 border-zinc-600 bg-zinc-800 flex items-center justify-center"
-                >
-                  <span className="text-xs font-pixel text-white/70 text-center px-2">
-                    Badge
-                  </span>
-                </div>
-              ))}
+            <div className="flex mt-8 ml-20 gap-8 flex-wrap">
+              {Object.values(BADGES).map((badge) => {
+                const isUnlocked = unlockedBadges.includes(badge.id);
+                const isSelected = selectedBadgeId === badge.id;
+                return (
+                  <div key={badge.id} className="relative group">
+                    <div
+                      onClick={() => {
+                        if (isUnlocked) {
+                          handleBadgeClick(badge.id);
+                        }
+                      }}
+                      className={`w-24 h-24 rounded-full border-2 ${
+                        isSelected 
+                          ? 'border-yellow-400 bg-yellow-400/20' 
+                          : isUnlocked
+                          ? 'border-zinc-600 bg-zinc-800 hover:border-zinc-500 cursor-pointer'
+                          : 'border-zinc-700 bg-zinc-900 cursor-not-allowed opacity-50'
+                      } flex items-center justify-center transition-all relative overflow-hidden`}
+                      title={isUnlocked ? badge.description : `Débloquer : ${badge.description}`}
+                    >
+                      <div className={`w-full h-full flex items-center justify-center ${
+                        isUnlocked ? '' : 'blur-sm'
+                      }`}>
+                        <Image
+                          src={badge.image}
+                          alt={badge.name}
+                          width={80}
+                          height={80}
+                          className="object-contain"
+                          unoptimized
+                        />
+                      </div>
+                      {isSelected && (
+                        <div className="absolute bottom-1 right-1 w-4 h-4 bg-yellow-400 rounded-full flex items-center justify-center z-10">
+                          <span className="text-[8px] text-black">✓</span>
+                        </div>
+                      )}
+                    </div>
+                    {/* Tooltip avec encadré au hover pour les badges non débloqués */}
+                    {!isUnlocked && (
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-zinc-900 border-2 border-white rounded-lg p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+                        <div className="space-y-2">
+                          <div className="border-b border-zinc-700 pb-2">
+                            <p className="text-xs font-pixel text-white font-bold">
+                              {badge.name}
+                            </p>
+                          </div>
+                          <p className="text-[10px] font-pixel text-white/90 leading-relaxed">
+                            {badge.unlockHint || badge.description}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -303,6 +381,22 @@ export default function ProfilPage() {
                           <div className="text-6xl">👤</div>
                         </div>
                       )}
+                      {/* Badge sélectionné en miniature dans le modal */}
+                      {selectedBadgeId && (() => {
+                        const badge = Object.values(BADGES).find(b => b.id === selectedBadgeId);
+                        return badge ? (
+                          <div className="absolute bottom-0 right-0 w-12 h-12 rounded-full border-2 border-white bg-zinc-900 flex items-center justify-center overflow-hidden">
+                            <Image
+                              src={badge.image}
+                              alt={badge.name}
+                              width={48}
+                              height={48}
+                              className="object-contain"
+                              unoptimized
+                            />
+                          </div>
+                        ) : null;
+                      })()}
                     </div>
                   </div>
                   <input
