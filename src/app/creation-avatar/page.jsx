@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import DeconnexionButton from "../components/DeconnexionButton";
 
 export default function AvatarCreationPage() {
   const [pseudo, setPseudo] = useState("");
@@ -94,7 +93,6 @@ export default function AvatarCreationPage() {
       <div className="w-full max-w-4xl px-6 relative z-10">
         {/* En-tête */}
         <div className="mb-8 text-center">
-        <DeconnexionButton />
           <h1 className="text-3xl font-bold font-pixel text-white mb-4">
             CRÉATION D'AVATAR
           </h1>
