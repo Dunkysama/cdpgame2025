@@ -46,6 +46,21 @@ export default function FurieSanguinairePage() {
     setAlertType(null);
   }, [currentCardIndex]);
 
+  // À la fin du jeu, enregistrer la progression pour la page Boss Final
+  useEffect(() => {
+    if (gameCompleted) {
+      const pct = Math.round((score / codeCards.length) * 100);
+      try {
+        localStorage.setItem("furieProgress", String(pct));
+        // Si échec (< 75%), l’utilisateur perd une vie côté Boss Final
+        if (pct < 75) {
+          const currentPenalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
+          localStorage.setItem("bossLivesPenalty", String(currentPenalty + 1));
+        }
+      } catch {}
+    }
+  }, [gameCompleted, score, codeCards.length]);
+
   const handleTouchStart = (e) => {
     const touch = e.touches[0];
     setDragStart({ x: touch.clientX, y: touch.clientY });
@@ -135,6 +150,7 @@ export default function FurieSanguinairePage() {
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
+      {/* Bouton fixe retiré pour n'afficher le retour qu'en fin de jeu */}
       {/* Alerte personnalisée */}
       {alertMessage && (
         <div 
@@ -183,6 +199,7 @@ export default function FurieSanguinairePage() {
             </div>
           </div>
         </div>
+
 
         {!gameCompleted ? (
           <>
@@ -260,12 +277,20 @@ export default function FurieSanguinairePage() {
                   : "Continuez à vous entraîner pour améliorer votre score !"}
               </p>
             </div>
-            <button
-              onClick={() => router.push("/")}
-              className="rounded-lg font-pixel bg-zinc-800 px-8 py-4 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 border-2 border-transparent hover:border-white"
-            >
-              RETOUR À L'ACCUEIL
-            </button>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => router.push("/")}
+                className="rounded-lg font-pixel bg-zinc-800 px-8 py-4 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 border-2 border-transparent hover:border-white"
+              >
+                RETOUR À L'ACCUEIL
+              </button>
+              <button
+                onClick={() => router.push("/boss-final")}
+                className="rounded-lg font-pixel bg-zinc-800 px-8 py-4 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 border-2 border-transparent hover:border-white"
+              >
+                RETOUR AU BOSS FINAL
+              </button>
+            </div>
           </div>
         )}
       </div>
