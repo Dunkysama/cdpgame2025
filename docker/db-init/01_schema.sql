@@ -33,9 +33,7 @@ CREATE TABLE Personnages(
 CREATE TABLE Themes(
    id_theme SERIAL,
    nom_theme VARCHAR(64)  NOT NULL,
-   id_personnage INTEGER,
    PRIMARY KEY(id_theme),
-   FOREIGN KEY(id_personnage) REFERENCES Personnages(id_personnage)
 );
 
 CREATE TABLE Questions(
@@ -52,4 +50,12 @@ CREATE TABLE posseder(
    PRIMARY KEY(id_utilisateur, id_badge),
    FOREIGN KEY(id_utilisateur) REFERENCES Utilisateurs(id_utilisateur),
    FOREIGN KEY(id_badge) REFERENCES Badges(id_badge)
+);
+
+CREATE TABLE reussir(
+   id_personnage INTEGER,
+   id_theme INTEGER,
+   PRIMARY KEY(id_personnage, id_theme),
+   FOREIGN KEY(id_personnage) REFERENCES Personnages(id_personnage),
+   FOREIGN KEY(id_theme) REFERENCES Themes(id_theme)
 );
