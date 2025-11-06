@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import potion from "@/asset/potion.png";
 
-export default function MarchandPage() {
+export default function MarchandPage({ onClose, onApplyItem = () => {}, onGoldChange = () => {} }) {
   const [gold, setGold] = useState(0);
   const [items, setItems] = useState({
     coeur: 0,
@@ -20,9 +21,9 @@ export default function MarchandPage() {
       if (savedGold) {
         setGold(parseInt(savedGold, 10));
       } else {
-        // Valeur par défaut : 50 gold
-        setGold(50);
-        localStorage.setItem("playerGold", "50");
+        // Valeur par défaut : 0 gold (les pièces gagnées en quiz alimentent l'achat)
+        setGold(0);
+        localStorage.setItem("playerGold", "0");
       }
 
       // Charger les items
@@ -53,10 +54,10 @@ export default function MarchandPage() {
     },
     {
       id: "tokenIndice",
-      name: "Token Indice",
-      icon: "🟣",
-      price: 30,
-      description: "Un token qui vous donne un indice précieux. Utilisez-le pour obtenir de l'aide lors des énigmes difficiles.",
+      name: "Potion",
+      iconImage: potion,
+      price: 50,
+      description: "Une potion utile qui vous aide lors des défis. Utilisez-la pour obtenir un avantage.",
     },
     {
       id: "sablier",
@@ -84,6 +85,12 @@ export default function MarchandPage() {
         localStorage.setItem("playerItems", JSON.stringify(newItems));
       }
 
+      // Notifier le parent (quiz) pour mettre à jour l'affichage de l'or
+      onGoldChange(newGold);
+
+      // Appliquer l'effet immédiat de l'objet acheté
+      onApplyItem(item.id);
+
       // Message de confirmation
       alert(`Vous avez acheté ${item.name} pour ${item.price} gold !`);
     } else {
@@ -92,21 +99,20 @@ export default function MarchandPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center font-sans relative">
-      <div className="w-full max-w-5xl px-6 relative z-10">
+    <div className="flex items-start justify-center font-sans relative">
+      <div className="w-full max-w-5xl px-4 relative z-10">
         {/* Titre */}
-        <div className="mb-8 text-center">
-        
+        <div className="mb-2 text-center">
           <div className="text-xl font-pixel text-yellow-400">
             💰 Or: {gold}
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-6">
+        <div className="flex flex-col md:flex-row gap-3">
           {/* Panneau gauche - Marchand */}
           <div className="w-full md:w-2/5 flex-shrink-0">
-            <div className="bg-zinc-900 border-4 border-white rounded-lg p-8 h-full flex flex-col items-center justify-center min-h-[500px]">
-              <div className="relative w-full h-full max-w-xs max-h-[400px] flex items-center justify-center">
+            <div className="bg-zinc-900 border-4 border-white rounded-lg p-4 h-full flex flex-col items-center justify-center">
+              <div className="relative w-full h-full max-w-xs max-h-[220px] flex items-center justify-center">
                 <Image
                   src="/asset/gobelin-marchand.png"
                   alt="Gobelin Marchand"
@@ -115,23 +121,27 @@ export default function MarchandPage() {
                   unoptimized
                 />
               </div>
-              <h2 className="text-2xl font-bold font-pixel text-white text-center mt-4">
+              <h2 className="text-xl font-bold font-pixel text-white text-center mt-2">
                 MARCHAND
               </h2>
             </div>
           </div>
 
           {/* Panneau droit - Items */}
-          <div className="flex-1 space-y-4 flex flex-col justify-center">
+          <div className="flex-1 space-y-3 flex flex-col justify-center">
             {shopItems.map((item) => (
               <div
                 key={item.id}
-                className="bg-zinc-900 border-2 border-zinc-600 rounded-lg p-5 flex items-center justify-between hover:border-white transition-all relative group"
+                className="bg-zinc-900 border-2 border-zinc-600 rounded-lg p-3 flex items-center justify-between hover:border-white transition-all relative group"
               >
-                <div className="flex items-center gap-4 flex-1">
-                  <div className="text-5xl">{item.icon}</div>
+                <div className="flex items-center gap-3 flex-1">
+                  {item.iconImage ? (
+                    <Image src={item.iconImage} alt={item.name} width={40} height={40} className="object-contain" />
+                  ) : (
+                    <div className="text-4xl">{item.icon}</div>
+                  )}
                   <div>
-                    <h3 className="text-xl font-bold font-pixel text-white mb-1">
+                    <h3 className="text-lg font-bold font-pixel text-white mb-0.5">
                       {item.name}
                     </h3>
                     <p className="text-sm font-pixel text-yellow-400">
@@ -144,13 +154,13 @@ export default function MarchandPage() {
                 <button
                   onClick={() => handleBuy(item)}
                   disabled={gold < item.price}
-                  className="rounded-lg font-pixel bg-zinc-800 px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 border-2 border-transparent hover:border-white disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-zinc-800"
+                  className="rounded-lg font-pixel bg-zinc-800 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 border-2 border-transparent hover:border-white disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-zinc-800"
                 >
                   Acheter
                 </button>
 
                 {/* Tooltip avec description au hover */}
-                <div className="absolute top-full left-0 right-0 mt-2 bg-zinc-900 border-2 border-white rounded-lg p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none shadow-lg">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-zinc-900 border-2 border-white rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none shadow-lg">
                   <p className="text-xs font-pixel text-white/90 leading-relaxed">
                     {item.description}
                   </p>
@@ -159,13 +169,22 @@ export default function MarchandPage() {
             ))}
 
             {/* Bouton Partir */}
-            <div className="pt-4">
-              <Link
-                href="/"
-                className="block w-full rounded-lg font-pixel bg-zinc-800 px-6 py-4 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 border-2 border-transparent hover:border-white text-center"
-              >
-                Partir
-              </Link>
+            <div className="pt-2">
+              {typeof onClose === "function" ? (
+                <button
+                  onClick={onClose}
+                  className="w-full rounded-lg font-pixel bg-zinc-800 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 border-2 border-transparent hover:border-white"
+                >
+                  Partir
+                </button>
+              ) : (
+                <Link
+                  href="/"
+                  className="block w-full rounded-lg font-pixel bg-zinc-800 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 border-2 border-transparent hover-border-white text-center"
+                >
+                  Partir
+                </Link>
+              )}
             </div>
           </div>
         </div>
