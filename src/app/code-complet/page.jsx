@@ -112,14 +112,68 @@ export default function CodeCompletPage() {
         0
       );
       const percent = Math.round((score / totalDropdowns) * 100);
-      try {
-        localStorage.setItem("sortProgress", String(percent));
-        // Si échec (< 75%), l’utilisateur perd une vie côté Boss Final
-        if (percent < 75) {
-          const currentPenalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
-          localStorage.setItem("bossLivesPenalty", String(currentPenalty + 1));
+      
+      // Sauvegarder dans la base de données
+      const saveProgress = async () => {
+        try {
+          if (typeof window !== "undefined") {
+            const savedCharacter = localStorage.getItem("selectedCharacter");
+            if (savedCharacter) {
+              const character = JSON.parse(savedCharacter);
+              const idPersonnage = character.id;
+
+              if (idPersonnage) {
+                const response = await fetch("/api/boss-mini-progress", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    nomMiniJeu: "sort",
+                    pourcentage: percent,
+                    idPersonnage: idPersonnage,
+                    addPenalty: percent < 75, // Ajouter une pénalité si échec
+                  }),
+                });
+
+                if (!response.ok) {
+                  console.error("Erreur lors de la sauvegarde de la progression sort");
+                  // Fallback sur localStorage en cas d'erreur
+                  localStorage.setItem("sortProgress", String(percent));
+                  if (percent < 75) {
+                    const currentPenalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
+                    localStorage.setItem("bossLivesPenalty", String(currentPenalty + 1));
+                  }
+                }
+              } else {
+                // Fallback sur localStorage si pas d'ID de personnage
+                localStorage.setItem("sortProgress", String(percent));
+                if (percent < 75) {
+                  const currentPenalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
+                  localStorage.setItem("bossLivesPenalty", String(currentPenalty + 1));
+                }
+              }
+            } else {
+              // Fallback sur localStorage si pas de personnage sélectionné
+              localStorage.setItem("sortProgress", String(percent));
+              if (percent < 75) {
+                const currentPenalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
+                localStorage.setItem("bossLivesPenalty", String(currentPenalty + 1));
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Erreur lors de la sauvegarde de la progression sort:", error);
+          // Fallback sur localStorage en cas d'erreur
+          try {
+            localStorage.setItem("sortProgress", String(percent));
+            if (percent < 75) {
+              const currentPenalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
+              localStorage.setItem("bossLivesPenalty", String(currentPenalty + 1));
+            }
+          } catch {}
         }
-      } catch {}
+      };
+
+      saveProgress();
     }
   }, [showResult, score, codeBlocks]);
 
