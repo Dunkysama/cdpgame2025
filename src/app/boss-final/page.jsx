@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import BossQuizLayout from "./quizLayout";
 import wall from "@/asset/wall.jpg";
-import elfFemelle from "@/asset/elf_femelle.png";
+// Le sprite du personnage sera chargé dynamiquement depuis localStorage
 import monstre from "@/asset/Global_monstre.png";
 import heart from "@/asset/heart.jpg";
 import heartless from "@/asset/heartless.jpg";
@@ -23,6 +23,77 @@ const BOSS_CONFIG = {
 
 export default function BossFinalPage() {
   const router = useRouter();
+
+  // Fonction pour normaliser le sexe depuis la BD vers le format attendu
+  const normalizeSexe = (sexe) => {
+    if (!sexe) return 'male';
+    const s = sexe.toString().toLowerCase();
+    // Gérer les formats de la BD : 'Femme' -> 'femelle', 'Homme' -> 'male'
+    if (s === 'femme' || s === 'femelle') return 'femelle';
+    if (s === 'homme' || s === 'male') return 'male';
+    return s; // Fallback si format inconnu
+  };
+
+  // Fonction pour normaliser la race depuis la BD vers le format attendu
+  const normalizeRace = (race) => {
+    if (!race) return 'humain';
+    const r = race.toString().toLowerCase();
+    // Gérer les formats de la BD : 'Elfe' -> 'elfe', 'Nain' -> 'nain', 'Humain' -> 'humain'
+    if (r === 'elfe') return 'elfe';
+    if (r === 'nain') return 'nain';
+    if (r === 'humain') return 'humain';
+    return r; // Fallback si format inconnu
+  };
+
+  // Fonction pour construire le chemin de l'avatar à partir de race et sexe
+  const getAvatarImagePath = (race = 'humain', sexe = 'male', imagePath = null) => {
+    // Si imagePath est fourni et valide, l'utiliser directement
+    if (imagePath && typeof imagePath === 'string' && imagePath.trim() !== '') {
+      return imagePath;
+    }
+    // Normaliser race et sexe (gère les formats de la BD et du code)
+    const raceNormalized = normalizeRace(race);
+    const sexeNormalized = normalizeSexe(sexe);
+    // Capitaliser la première lettre pour le chemin de fichier
+    const raceCapitalized = raceNormalized.charAt(0).toUpperCase() + raceNormalized.slice(1);
+    const sexeCapitalized = sexeNormalized.charAt(0).toUpperCase() + sexeNormalized.slice(1);
+    return `/asset/${raceCapitalized}-${sexeCapitalized}.png`;
+  };
+
+  // Charger le sprite du personnage sélectionné depuis localStorage
+  const [characterSprite, setCharacterSprite] = useState(() => {
+    // Valeur initiale : toujours utiliser humain male par défaut
+    // Le useEffect se chargera de charger depuis localStorage si disponible
+    return '/asset/Humain-male.png';
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedCharacter = localStorage.getItem("selectedCharacter");
+      if (savedCharacter) {
+        try {
+          const character = JSON.parse(savedCharacter);
+          
+          // Vérifier que le personnage a les données nécessaires
+          if (character && (character.race || character.sexe || character.imagePath)) {
+            // Utiliser le chemin d'image du personnage si disponible, sinon construire depuis race/sexe
+            const spritePath = getAvatarImagePath(character.race, character.sexe, character.imagePath);
+            setCharacterSprite(spritePath);
+          } else {
+            // Données invalides, utiliser le défaut
+            setCharacterSprite('/asset/Humain-male.png');
+          }
+        } catch (e) {
+          console.error("Erreur lors du chargement du personnage:", e);
+          // En cas d'erreur, utiliser le sprite par défaut
+          setCharacterSprite('/asset/Humain-male.png');
+        }
+      } else {
+        // Si aucun personnage n'est sélectionné, utiliser le défaut
+        setCharacterSprite('/asset/Humain-male.png');
+      }
+    }
+  }, []);
 
   // Charger les questions
   const allQuestions = useMemo(() => globalQuestionsData.questions, []);
@@ -223,9 +294,9 @@ export default function BossFinalPage() {
     }
   }, [bossHeartsCount, router]);
 
-  // Construire les overlays dynamiquement (elfe, boss, cœurs du boss)
+  // Construire les overlays dynamiquement (personnage sélectionné, boss, cœurs du boss)
   const overlayItems = [
-    { src: elfFemelle.src, top: "85%", left: "15%", width: "8%" },
+    { src: characterSprite, top: "85%", left: "15%", width: "8%" },
     { src: monstre.src, top: "50%", left: "75%", width: "50%" },
     ...Array.from({ length: bossHeartsCount }).map((_, idx) => ({
       src: heart.src,
