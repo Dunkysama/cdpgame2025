@@ -149,6 +149,7 @@ export default function GlobalQuizPage(props) {
   const [timer, setTimer] = useState(15);
   const [lives, setLives] = useState(3);
   const [maxLives, setMaxLives] = useState(3);
+  const [sablierCount, setSablierCount] = useState(0);
 
   // Redirection Game Over quand il n'y a plus de vies
   useEffect(() => {
@@ -264,6 +265,8 @@ export default function GlobalQuizPage(props) {
         setGold(0);
         localStorage.setItem("playerGold", "0");
       }
+      // Initialiser le stock de sabliers à 0 par défaut sur cette page
+      setSablierCount(0);
     }
   }, []);
 
@@ -425,7 +428,16 @@ export default function GlobalQuizPage(props) {
         setLives(maxLives);
         break;
       case "sablier":
-        setTimer((t) => Math.min(TIMER_MAX, t + TIMER_BONUS_SECONDS));
+        // Ne pas activer automatiquement : augmenter le stock de sabliers à utiliser manuellement
+        setSablierCount((c) => c + 1);
+        try {
+          if (typeof window !== "undefined") {
+            const savedItems = localStorage.getItem("playerItems");
+            const items = savedItems ? JSON.parse(savedItems) : { coeur: 0, tokenIndice: 0, sablier: 0 };
+            const nextItems = { ...items, sablier: (items.sablier || 0) + 1 };
+            localStorage.setItem("playerItems", JSON.stringify(nextItems));
+          }
+        } catch {}
         break;
       default:
         break;
@@ -471,6 +483,25 @@ export default function GlobalQuizPage(props) {
     
     // Consommer le token
     setTokens((t) => Math.max(0, t - 1));
+  };
+
+  // Activer manuellement un sablier pour ajouter du temps
+  const handleUseSablier = () => {
+    if (isMerchantOpen) return; // ne pas utiliser pendant l'achat chez le marchand
+    if (answered) return; // pas utile après réponse
+    if (isQuizFinished) return; // inutile si terminé
+    if (timer <= 0) return; // aucun effet si timer écoulé
+    if (sablierCount <= 0) return; // pas de stock
+    setTimer((t) => Math.min(TIMER_MAX, t + TIMER_BONUS_SECONDS));
+    setSablierCount((c) => Math.max(0, c - 1));
+    try {
+      if (typeof window !== "undefined") {
+        const savedItems = localStorage.getItem("playerItems");
+        const items = savedItems ? JSON.parse(savedItems) : { coeur: 0, tokenIndice: 0, sablier: 0 };
+        const nextItems = { ...items, sablier: Math.max(0, (items.sablier || 0) - 1) };
+        localStorage.setItem("playerItems", JSON.stringify(nextItems));
+      }
+    } catch {}
   };
 
   // Plateformes ordonnées du bas (top élevé) vers le haut (top faible)
@@ -528,47 +559,50 @@ export default function GlobalQuizPage(props) {
 
   return (
     <>
-    <QuizLayout
-      title="THÈME 6 – QUIZ GLOBAL (Culture Tech)"
-      level={currentQuestion?.level}
-      question={currentQuestion?.question || ""}
-      options={currentQuestion?.options || []}
-      correctIndex={currentQuestion?.correctIndex ?? 0}
-      selectedIndex={selectedIndex}
-      answered={answered}
-      onSelect={handleAnswer}
-      hint={currentQuestion?.hint || ""}
-      showHint={showHint}
-      onRevealHint={handleRevealHint}
-      score={Math.min(score, QUIZ_CONFIG.MAX_SCORE)}
-      currentIndex={0}
-      total={QUIZ_CONFIG.MAX_SCORE}
-      visualImageSrc={visualImageSrc ?? globalPlaine.src}
-      visualOverlayItems={platforms}
-      visualCharacterSrc={characterSprite || '/asset/Humain-male.png'}
-      visualCharacterIndex={currentCharacterIndex}
-      visualCharacterWidth="5%"
-      visualCharacterStartTop="100%"
-      visualCharacterStartLeft="50%"
-      visualCharacterPositions={characterPositions}
-      lives={lives}
-      maxLives={maxLives}
-      coinCount={gold}
-      heartFullSrc={heart.src}
-      heartEmptySrc={heartless.src}
-      coinSrc={coin.src}
-      tokenSrc={token.src}
-      tokens={tokens}
-      onChangeQuestion={handleChangeQuestion}
-      onNext={() => {
-        // Bouton désactivé car on ne passe plus à la question suivante
-        // On remplace toujours la question actuelle
-        return;
-      }}
-      hasNext={false}
-      timerSeconds={timer}
-      timerTotalSeconds={15}
-    />
+      <QuizLayout
+        title="THÈME 6 – QUIZ GLOBAL (Culture Tech)"
+        level={currentQuestion?.level}
+        question={currentQuestion?.question || ""}
+        options={currentQuestion?.options || []}
+        correctIndex={currentQuestion?.correctIndex ?? 0}
+        selectedIndex={selectedIndex}
+        answered={answered}
+        onSelect={handleAnswer}
+        hint={currentQuestion?.hint || ""}
+        showHint={showHint}
+        onRevealHint={handleRevealHint}
+        score={Math.min(score, QUIZ_CONFIG.MAX_SCORE)}
+        currentIndex={0}
+        total={QUIZ_CONFIG.MAX_SCORE}
+        visualImageSrc={visualImageSrc ?? globalPlaine.src}
+        visualOverlayItems={platforms}
+        visualCharacterSrc={characterSprite || '/asset/Humain-male.png'}
+        visualCharacterIndex={currentCharacterIndex}
+        visualCharacterWidth="5%"
+        visualCharacterStartTop="100%"
+        visualCharacterStartLeft="50%"
+        visualCharacterPositions={characterPositions}
+        lives={lives}
+        maxLives={maxLives}
+        coinCount={gold}
+        heartFullSrc={heart.src}
+        heartEmptySrc={heartless.src}
+        coinSrc={coin.src}
+        tokenSrc={token.src}
+        tokens={tokens}
+        sablierCount={sablierCount}
+        onUseSablier={handleUseSablier}
+        disableSablier={isMerchantOpen}
+        onChangeQuestion={handleChangeQuestion}
+        onNext={() => {
+          // Bouton désactivé car on ne passe plus à la question suivante
+          // On remplace toujours la question actuelle
+          return;
+        }}
+        hasNext={false}
+        timerSeconds={timer}
+        timerTotalSeconds={15}
+      />
     
     {/* Mage présentateur avec bulle de dialogue */}
     {showMageMessage && (
