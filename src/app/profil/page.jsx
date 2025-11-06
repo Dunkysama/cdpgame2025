@@ -223,28 +223,62 @@ export default function ProfilPage() {
     setShowEditModal(true);
   };
 
-  const handleSaveEdit = () => {
-    if (typeof window !== "undefined") {
-      // Vérifier que les mots de passe correspondent si un nouveau mot de passe est saisi
-      if (editPassword && editPassword !== editConfirmPassword) {
-        alert("Les mots de passe ne correspondent pas");
-        return;
-      }
+ const handleSaveEdit = async () => {
+  if (typeof window === "undefined") return;
 
-      localStorage.setItem("profilPseudo", editPseudo);
-      localStorage.setItem("profilImage", editImage);
-      if (editEmail) {
-        localStorage.setItem("profilEmail", editEmail);
-        setProfilEmail(editEmail);
-      }
-      if (editPassword) {
-        localStorage.setItem("profilPassword", editPassword);
-      }
-      setProfilPseudo(editPseudo);
-      setProfilImage(editImage);
-      setShowEditModal(false);
+  // ✅ Vérifier si les mots de passe correspondent
+  if (editPassword && editPassword !== editConfirmPassword) {
+    alert("Les mots de passe ne correspondent pas");
+    return;
+  }
+
+  try {
+    //  Appel API pour mettre à jour dans la BDD
+    const res = await fetch("/api/update", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    nom_utilisateur: editPseudo?.trim() || undefined,
+    email: editEmail?.trim() || undefined,
+    mot_de_passe: editPassword || undefined,
+  }),
+});
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || "Erreur lors de la mise à jour");
     }
-  };
+
+    //  Si la BDD est bien mise à jour → on met à jour l'affichage + localStorage
+    if (editPseudo) {
+      setProfilPseudo(editPseudo);
+      localStorage.setItem("profilPseudo", editPseudo);
+    }
+
+    if (editImage) {
+      setProfilImage(editImage);
+      localStorage.setItem("profilImage", editImage);
+    }
+
+    if (editEmail) {
+      setProfilEmail(editEmail);
+      localStorage.setItem("profilEmail", editEmail);
+    }
+
+    if (editPassword) {
+      localStorage.setItem("profilPassword", editPassword);
+    }
+
+    //  Fermer la fenêtre modale après sauvegarde
+    setShowEditModal(false);
+
+    alert("✅ Profil mis à jour avec succès !");
+  } catch (err) {
+    console.error("Erreur :", err);
+    alert( err.message);
+  }
+};
+
 
   const handleCancelEdit = () => {
     setEditPseudo(profilPseudo);
