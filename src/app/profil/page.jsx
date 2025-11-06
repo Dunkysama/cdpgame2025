@@ -233,23 +233,40 @@ export default function ProfilPage() {
   }
 
   try {
-    //  Appel API pour mettre à jour dans la BDD
-    const res = await fetch("/api/update", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    nom_utilisateur: editPseudo?.trim() || undefined,
-    email: editEmail?.trim() || undefined,
-    mot_de_passe: editPassword || undefined,
-  }),
-});
-
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || "Erreur lors de la mise à jour");
+    // 1) Mise à jour du mot de passe en BDD si saisi
+    if (editPassword) {
+      const pwRes = await fetch("/api/profil/password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ newPassword: editPassword }),
+      });
+      const pwData = await pwRes.json().catch(() => ({}));
+      if (!pwRes.ok) {
+        throw new Error(pwData?.error || "Échec de la mise à jour du mot de passe");
+      }
     }
 
-    //  Si la BDD est bien mise à jour → on met à jour l'affichage + localStorage
+    // 2) Mise à jour pseudo/email en BDD si modifiés
+    if (editPseudo?.trim() || editEmail?.trim()) {
+      const prRes = await fetch("/api/profil", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nom_utilisateur: editPseudo?.trim() || undefined,
+          email: editEmail?.trim() || undefined,
+        }),
+      });
+      const prData = await prRes.json().catch(() => ({}));
+      if (!prRes.ok) {
+        throw new Error(prData?.error || "Échec de la mise à jour du profil");
+      }
+      if (prData?.user) {
+        setProfilPseudo(prData.user.username || editPseudo);
+        setProfilEmail(prData.user.email || editEmail);
+      }
+    }
+
+    // 3) Mettre à jour l'affichage + localStorage pour l'image (path via upload déjà géré)
     if (editPseudo) {
       setProfilPseudo(editPseudo);
       localStorage.setItem("profilPseudo", editPseudo);
@@ -265,14 +282,12 @@ export default function ProfilPage() {
       localStorage.setItem("profilEmail", editEmail);
     }
 
-    if (editPassword) {
-      localStorage.setItem("profilPassword", editPassword);
-    }
+    // Ne jamais stocker le mot de passe en localStorage
 
     //  Fermer la fenêtre modale après sauvegarde
     setShowEditModal(false);
 
-    alert("✅ Profil mis à jour avec succès !");
+    alert("✅ Profil mis à jour avec succès !" + (editPassword ? "\n(Mot de passe changé)" : ""));
   } catch (err) {
     console.error("Erreur :", err);
     alert( err.message);

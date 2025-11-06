@@ -6,7 +6,7 @@ CREATE TABLE Utilisateurs(
    email VARCHAR(128)  NOT NULL,
    mot_de_passe VARCHAR(128)  NOT NULL,
    nom_utilisateur VARCHAR(128)  NOT NULL,
-   date_inscription TIMESTAMP,
+   date_inscription TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
    PRIMARY KEY(id_utilisateur),
    UNIQUE(email)
 );
