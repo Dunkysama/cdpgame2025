@@ -12,6 +12,8 @@ import coin from "@/asset/coin.jpg";
 import token from "@/asset/token.png";
 import MarchandPage from "@/app/marchand/page.jsx";
 import globalQuestionsData from "@/data/global-questions.json";
+import mageMessagesData from "@/data/mage-messages.json";
+import Image from "next/image";
 
 
 // Configuration du quiz
@@ -35,6 +37,13 @@ export default function GlobalQuizPage() {
     if (allQuestions.length === 0) return null;
     return allQuestions[Math.floor(Math.random() * allQuestions.length)];
   };
+  
+  // Fonction pour obtenir un message aléatoire du mage
+  const getRandomMageMessage = useCallback((category) => {
+    const messages = mageMessagesData[category];
+    if (!messages || messages.length === 0) return "";
+    return messages[Math.floor(Math.random() * messages.length)];
+  }, []);
 
   // État du quiz - on garde toujours la même question actuelle jusqu'à ce qu'elle soit remplacée
   const initialQuestion = getRandomQuestion();
@@ -59,11 +68,37 @@ export default function GlobalQuizPage() {
   const [hasVisitedMerchant, setHasVisitedMerchant] = useState(false);
   const [usedQuestionIds, setUsedQuestionIds] = useState(new Set(initialQuestion ? [initialQuestion.id] : []));
   const usedQuestionIdsRef = useRef(new Set(initialQuestion ? [initialQuestion.id] : []));
-
+  
+  const [mageMessage, setMageMessage] = useState(mageMessagesData.welcome[0]);
+  const [showMageMessage, setShowMageMessage] = useState(true);
+  const lowTimerMessageShownRef = useRef(false);
+  const hasAnsweredFirstQuestionRef = useRef(false);
+  
   // Synchroniser le ref avec l'état
   useEffect(() => {
     usedQuestionIdsRef.current = usedQuestionIds;
   }, [usedQuestionIds]);
+  
+  // Changer le message du mage au début d'une nouvelle question (mais pas welcome après la première réponse)
+  useEffect(() => {
+    if (!answered && currentQuestion && score < QUIZ_CONFIG.MAX_SCORE) {
+      // Ne montrer le message welcome qu'au tout début, avant la première réponse
+      if (!hasAnsweredFirstQuestionRef.current) {
+        const welcomeMsg = getRandomMageMessage("welcome");
+        setMageMessage(welcomeMsg);
+        setShowMageMessage(true);
+      }
+      // Après la première réponse, on ne change plus le message ici (il sera changé par handleAnswer)
+    }
+  }, [currentQuestion?.id, answered, score, getRandomMageMessage]);
+  
+  // Message spécial quand le quiz est terminé
+  useEffect(() => {
+    if (score >= QUIZ_CONFIG.MAX_SCORE) {
+      setMageMessage(getRandomMageMessage("victory"));
+      setShowMageMessage(true);
+    }
+  }, [score, getRandomMageMessage]);
 
   // Trouver une nouvelle question aléatoire dans le JSON (non utilisée)
   const findNewRandomQuestion = useCallback((currentQuestionId, usedIds) => {
@@ -115,6 +150,8 @@ export default function GlobalQuizPage() {
   useEffect(() => {
     setShowHint(false);
     setTimer(15);
+    lowTimerMessageShownRef.current = false;
+    // Ne pas réinitialiser hasAnsweredFirstQuestionRef car on veut garder cette info
   }, [currentQuestion]);
 
   // Initialiser l'or depuis localStorage au montage
@@ -146,9 +183,18 @@ export default function GlobalQuizPage() {
       }, 1000);
       return;
     }
+    
+    // Message du mage quand le timer est bas
+    if (timer <= 5 && timer > 0 && !answered && score < QUIZ_CONFIG.MAX_SCORE) {
+      if (timer === 5 && !lowTimerMessageShownRef.current) {
+        setMageMessage(getRandomMageMessage("lowTimer"));
+        setShowMageMessage(true);
+        lowTimerMessageShownRef.current = true;
+      }
+    }
     const id = setTimeout(() => setTimer((t) => t - 1), 1000);
     return () => clearTimeout(id);
-  }, [timer, answered, isMerchantOpen, score, currentQuestion, replaceCurrentQuestion]);
+  }, [timer, answered, isMerchantOpen, score, currentQuestion, replaceCurrentQuestion, getRandomMageMessage]);
 
   const playSuccessTone = () => {
     try {
@@ -180,7 +226,16 @@ export default function GlobalQuizPage() {
     const isCorrect = index === currentQuestion.correctIndex;
     setAnswered(true);
     
+    // Marquer qu'une première question a été répondue (pour ne plus afficher les messages welcome)
+    if (!hasAnsweredFirstQuestionRef.current) {
+      hasAnsweredFirstQuestionRef.current = true;
+    }
+    
     if (isCorrect) {
+      // Message du mage pour bonne réponse
+      setMageMessage(getRandomMageMessage("correct"));
+      setShowMageMessage(true);
+      
       // Bonne réponse : incrémenter le score
       setScore((s) => {
         const nextScore = Math.min(s + 1, QUIZ_CONFIG.MAX_SCORE);
@@ -210,6 +265,10 @@ export default function GlobalQuizPage() {
         });
       }, 1000);
     } else {
+      // Message du mage pour mauvaise réponse
+      setMageMessage(getRandomMageMessage("incorrect"));
+      setShowMageMessage(true);
+      
       // Mauvaise réponse : remplacer la question actuelle par une nouvelle du JSON
       // Le score n'est PAS incrémenté
       setLives((l) => Math.max(0, l - 1));
@@ -373,6 +432,31 @@ export default function GlobalQuizPage() {
       timerSeconds={timer}
       timerTotalSeconds={15}
     />
+    
+    {/* Mage présentateur avec bulle de dialogue */}
+    {showMageMessage && (
+      <div className="fixed z-[100] flex items-end gap-3 pointer-events-none" style={{ bottom: '25rem', left: '1rem' }}>
+        {/* Image du mage */}
+        <div className="relative w-20 h-20 md:w-28 md:h-28 flex-shrink-0">
+          <Image
+            src="/asset/mage.png"
+            alt="Mage présentateur"
+            fill
+            className="object-contain"
+            priority
+          />
+        </div>
+        {/* Bulle de dialogue */}
+        <div className="relative bg-white border-4 border-black rounded-2xl px-4 py-3 max-w-xs shadow-lg">
+          <div className="font-pixel text-xs md:text-sm text-black">
+            {mageMessage}
+          </div>
+          {/* Pointe de la bulle pointant vers le mage */}
+          <div className="absolute -left-3 bottom-6 w-0 h-0 border-t-[12px] border-b-[12px] border-r-[12px] border-t-transparent border-b-transparent border-r-black"></div>
+          <div className="absolute -left-2 bottom-[26px] w-0 h-0 border-t-[10px] border-b-[10px] border-r-[10px] border-t-transparent border-b-transparent border-r-white"></div>
+        </div>
+      </div>
+    )}
 
     {isMerchantOpen && (
       <div className="fixed inset-0 z-[999] bg-black/80 flex items-center justify-center">
