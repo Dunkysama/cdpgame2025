@@ -4,7 +4,8 @@ import { verifySessionToken } from "@/app/utils/session";
 
 export async function POST() {
   // Tente de lire et logguer la session avant suppression
-  const token = cookies().get("session")?.value;
+  const store = await cookies();
+  const token = store.get("session")?.value;
   if (token) {
     const payload = await verifySessionToken(token);
     if (payload) {

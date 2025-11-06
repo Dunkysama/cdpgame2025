@@ -12,7 +12,7 @@ export async function loginUser({ email, password }) {
     const { rows } = await pool.query(
       `SELECT id_utilisateur AS id, nom_utilisateur, email, mot_de_passe
        FROM Utilisateurs
-       WHERE email = $1
+       WHERE email = $1 OR nom_utilisateur = $1
        LIMIT 1`,
       [email]
     );
