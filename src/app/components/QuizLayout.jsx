@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import changeIcon from "@/asset/change.png";
+import BouttonAbandonner from "@/app/components/buttonAbandonner";
 
 export default function QuizLayout({
   title,
@@ -35,6 +36,7 @@ export default function QuizLayout({
   visualCharacterWidth,
   visualCharacterPositions,
   lives,
+  maxLives = 3,
   coinCount,
   heartFullSrc,
   heartEmptySrc,
@@ -150,7 +152,7 @@ export default function QuizLayout({
           {typeof lives === "number" && heartFullSrc && heartEmptySrc && (
             <div className="absolute top-2 left-2 flex flex-col items-start gap-2 pointer-events-none">
               <div className="flex items-center gap-1">
-                {[0, 1, 2].map((i) => (
+                {Array.from({ length: Math.max(3, maxLives) }, (_, i) => i).map((i) => (
                   <img
                     key={i}
                     src={i < lives ? heartFullSrc : heartEmptySrc}
@@ -177,6 +179,11 @@ export default function QuizLayout({
               )}
             </div>
           )}
+
+          {/* Bouton Abandonner en haut à droite */}
+          <div className="absolute top-2 right-2">
+            <BouttonAbandonner />
+          </div>
         </div>
 
         {/* Bandeau 'Question' au-dessus des réponses, centré, avec traits latéraux */}
@@ -251,6 +258,8 @@ export default function QuizLayout({
           )}
 
           {/* Score final, sans bouton retour ni bouton suivant */}
+
+          
           <div className="mt-4 flex items-center justify-end">
             {hasNext ? (
               <div className="font-pixel text-[10px] md:text-xs text-black/60">&nbsp;</div>
