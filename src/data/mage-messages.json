@@ -1,0 +1,36 @@
+{
+  "welcome": [
+    "Bienvenue, jeune codeur ! Prépare-toi à être testé !",
+    "Ah, un nouveau challenger ! Espérons que tu connais tes classes...",
+    "Salut ! Moi c'est le Mage du Code. Tu es prêt ?",
+    "Enfin quelqu'un ! J'allais m'ennuyer... Allez, on commence !"
+  ],
+  "correct": [
+    "Excellent ! Tu as du potentiel !",
+    "Bravo ! Tu progresses bien !",
+    "Parfait ! Continue comme ça !",
+    "Impressionnant ! Tu maîtrises ça !",
+    "Bien joué ! Tu es sur la bonne voie !",
+    "Super ! Tu as l'œil pour le code !"
+  ],
+  "incorrect": [
+    "Oups ! Ce n'était pas ça... Mais ne te décourage pas !",
+    "Raté ! Mais c'est en se trompant qu'on apprend !",
+    "Hmm, pas la bonne réponse... Réessaie !",
+    "Dommage ! Mais tu vas y arriver !",
+    "Pas tout à fait... Mais continue !"
+  ],
+  "lowTimer": [
+    "Attention ! Le temps file !",
+    "Dépêche-toi ! Le chrono tourne !",
+    "Plus que quelques secondes !",
+    "Vite, vite ! Le temps presse !"
+  ],
+  "victory": [
+    "Félicitations ! Tu as réussi le quiz ! Bonne chance pour le boss !",
+    "Impressionnant ! Tu es prêt pour le boss final !",
+    "Bravo ! Tu as complété le quiz ! Bonne chance pour le boss !",
+    "Excellent travail ! Le boss t'attend... Bonne chance !"
+  ]
+}
+
