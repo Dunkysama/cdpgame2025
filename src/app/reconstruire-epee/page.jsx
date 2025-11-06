@@ -222,16 +222,70 @@ export default function ReconstruireEpeePage() {
     const completed = Object.keys(results).length === challenges.length;
     if (showResult || completed) {
       const percent = Math.round((score / challenges.length) * 100);
-      try {
-        localStorage.setItem("epeeProgress", String(percent));
-        // Si échec (< 75%), l’utilisateur perd une vie côté Boss Final
-        if (percent < 75) {
-          const currentPenalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
-          localStorage.setItem("bossLivesPenalty", String(currentPenalty + 1));
+      
+      // Sauvegarder dans la base de données
+      const saveProgress = async () => {
+        try {
+          if (typeof window !== "undefined") {
+            const savedCharacter = localStorage.getItem("selectedCharacter");
+            if (savedCharacter) {
+              const character = JSON.parse(savedCharacter);
+              const idPersonnage = character.id;
+
+              if (idPersonnage) {
+                const response = await fetch("/api/boss-mini-progress", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    nomMiniJeu: "epee",
+                    pourcentage: percent,
+                    idPersonnage: idPersonnage,
+                    addPenalty: percent < 75, // Ajouter une pénalité si échec
+                  }),
+                });
+
+                if (!response.ok) {
+                  console.error("Erreur lors de la sauvegarde de la progression epee");
+                  // Fallback sur localStorage en cas d'erreur
+                  localStorage.setItem("epeeProgress", String(percent));
+                  if (percent < 75) {
+                    const currentPenalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
+                    localStorage.setItem("bossLivesPenalty", String(currentPenalty + 1));
+                  }
+                }
+              } else {
+                // Fallback sur localStorage si pas d'ID de personnage
+                localStorage.setItem("epeeProgress", String(percent));
+                if (percent < 75) {
+                  const currentPenalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
+                  localStorage.setItem("bossLivesPenalty", String(currentPenalty + 1));
+                }
+              }
+            } else {
+              // Fallback sur localStorage si pas de personnage sélectionné
+              localStorage.setItem("epeeProgress", String(percent));
+              if (percent < 75) {
+                const currentPenalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
+                localStorage.setItem("bossLivesPenalty", String(currentPenalty + 1));
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Erreur lors de la sauvegarde de la progression epee:", error);
+          // Fallback sur localStorage en cas d'erreur
+          try {
+            localStorage.setItem("epeeProgress", String(percent));
+            if (percent < 75) {
+              const currentPenalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
+              localStorage.setItem("bossLivesPenalty", String(currentPenalty + 1));
+            }
+          } catch {}
         }
-      } catch {}
+      };
+
+      saveProgress();
     }
-  }, [showResult, results, score]);
+  }, [showResult, results, score, challenges.length]);
 
   return (
     <div className="flex min-h-screen items-center justify-center font-sans relative">
