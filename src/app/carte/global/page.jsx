@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import QuizLayout from "@/app/components/QuizLayout";
 import globalPlaine from "@/asset/global__plaine.png";
 import plateforme from "@/asset/plateforme.png";
-import elfFemelle from "@/asset/elf_femelle.png";
+// Le sprite du personnage sera chargé dynamiquement depuis localStorage
 import heart from "@/asset/heart.jpg";
 import heartless from "@/asset/heartless.jpg";
 import coin from "@/asset/coin.jpg";
@@ -26,11 +26,104 @@ const MAX_LIVES = 3;
 const TIMER_BONUS_SECONDS = 10;
 const TIMER_MAX = 30;
 
-export default function GlobalQuizPage() {
+export default function GlobalQuizPage(props) {
+  const { visualImageSrc } = props || {};
   const router = useRouter();
   // Charger toutes les questions depuis le JSON
   const allQuestions = useMemo(() => globalQuestionsData.questions, []);
   const bonusQuestions = useMemo(() => globalQuestionsData.bonusQuestions, []);
+  
+  // Fonction pour normaliser le sexe depuis la BD vers le format attendu
+  const normalizeSexe = (sexe) => {
+    if (!sexe) return 'male';
+    const s = sexe.toString().toLowerCase();
+    // Gérer les formats de la BD : 'Femme' -> 'femelle', 'Homme' -> 'male'
+    if (s === 'femme' || s === 'femelle') return 'femelle';
+    if (s === 'homme' || s === 'male') return 'male';
+    return s; // Fallback si format inconnu
+  };
+
+  // Fonction pour normaliser la race depuis la BD vers le format attendu
+  const normalizeRace = (race) => {
+    if (!race) return 'humain';
+    const r = race.toString().toLowerCase();
+    // Gérer les formats de la BD : 'Elfe' -> 'elfe', 'Nain' -> 'nain', 'Humain' -> 'humain'
+    if (r === 'elfe') return 'elfe';
+    if (r === 'nain') return 'nain';
+    if (r === 'humain') return 'humain';
+    return r; // Fallback si format inconnu
+  };
+
+  // Fonction pour construire le chemin de l'avatar à partir de race et sexe
+  const getAvatarImagePath = (race = 'humain', sexe = 'male', imagePath = null) => {
+    // Si imagePath est fourni et valide, l'utiliser directement
+    if (imagePath && typeof imagePath === 'string' && imagePath.trim() !== '') {
+      return imagePath;
+    }
+    // Normaliser race et sexe (gère les formats de la BD et du code)
+    const raceNormalized = normalizeRace(race);
+    const sexeNormalized = normalizeSexe(sexe);
+    // Capitaliser la première lettre pour le chemin de fichier
+    const raceCapitalized = raceNormalized.charAt(0).toUpperCase() + raceNormalized.slice(1);
+    const sexeCapitalized = sexeNormalized.charAt(0).toUpperCase() + sexeNormalized.slice(1);
+    return `/asset/${raceCapitalized}-${sexeCapitalized}.png`;
+  };
+
+  // Charger le sprite du personnage sélectionné depuis localStorage
+  const [characterSprite, setCharacterSprite] = useState(() => {
+    // Valeur initiale : toujours utiliser humain male par défaut
+    // Le useEffect se chargera de charger depuis localStorage si disponible
+    return '/asset/Humain-male.png';
+  });
+  
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedCharacter = localStorage.getItem("selectedCharacter");
+      if (savedCharacter) {
+        try {
+          const character = JSON.parse(savedCharacter);
+          console.log("Personnage dans useEffect:", character);
+          
+          // Vérifier que le personnage a les données nécessaires
+          if (character && (character.race || character.sexe || character.imagePath)) {
+            // Vérifier si imagePath contient l'ancien import statique elf_femelle
+            if (character.imagePath && typeof character.imagePath === 'string' && 
+                (character.imagePath.includes('elf_femelle') || character.imagePath.includes('_next/static'))) {
+              console.warn("Ancien chemin détecté dans imagePath, nettoyage...");
+              // Nettoyer l'imagePath invalide et reconstruire depuis race/sexe
+              const spritePath = getAvatarImagePath(character.race, character.sexe, null);
+              console.log("Nouveau chemin sprite calculé:", spritePath);
+              setCharacterSprite(spritePath);
+            } else {
+              // Utiliser le chemin d'image du personnage si disponible, sinon construire depuis race/sexe
+              const spritePath = getAvatarImagePath(character.race, character.sexe, character.imagePath);
+              console.log("Mise à jour du sprite vers:", spritePath);
+              
+              // Vérifier que le chemin ne contient pas 'elf_femelle' (ancien import statique)
+              if (spritePath && typeof spritePath === 'string' && spritePath.includes('elf_femelle')) {
+                console.warn("Chemin invalide détecté, utilisation du défaut");
+                setCharacterSprite('/asset/Humain-male.png');
+              } else {
+                setCharacterSprite(spritePath);
+              }
+            }
+          } else {
+            // Données invalides, utiliser le défaut
+            console.log("Données de personnage invalides, utilisation du défaut");
+            setCharacterSprite('/asset/Humain-male.png');
+          }
+        } catch (e) {
+          console.error("Erreur lors du chargement du personnage:", e);
+          // En cas d'erreur, utiliser le sprite par défaut
+          setCharacterSprite('/asset/Humain-male.png');
+        }
+      } else {
+        // Si aucun personnage n'est sélectionné, utiliser le défaut
+        console.log("Aucun personnage sélectionné, utilisation du défaut");
+        setCharacterSprite('/asset/Humain-male.png');
+      }
+    }
+  }, []);
 
   // Sélectionner une question aléatoire au début
   const getRandomQuestion = () => {
@@ -45,8 +138,8 @@ export default function GlobalQuizPage() {
     return messages[Math.floor(Math.random() * messages.length)];
   }, []);
 
-  // État du quiz - on garde toujours la même question actuelle jusqu'à ce qu'elle soit remplacée
-  const initialQuestion = getRandomQuestion();
+  // État du quiz – question initiale déterministe pour éviter les erreurs d’hydratation
+  const initialQuestion = allQuestions.length ? allQuestions[0] : null;
   const [currentQuestion, setCurrentQuestion] = useState(initialQuestion);
   const [answered, setAnswered] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(null);
@@ -215,6 +308,13 @@ export default function GlobalQuizPage() {
 
   // Calculer si le quiz est terminé
   const isQuizFinished = score >= QUIZ_CONFIG.MAX_SCORE;
+
+  // À 8 bonnes réponses, rediriger vers la page Boss Final
+  useEffect(() => {
+    if (score >= QUIZ_CONFIG.MAX_SCORE) {
+      router.push("/boss-final");
+    }
+  }, [score, router]);
 
   const handleAnswer = (index) => {
     if (isMerchantOpen) return;
@@ -389,6 +489,15 @@ export default function GlobalQuizPage() {
 
   const closeMerchant = () => setIsMerchantOpen(false);
 
+  // Log pour déboguer
+  useEffect(() => {
+    console.log("characterSprite actuel:", characterSprite);
+    console.log("Type de characterSprite:", typeof characterSprite);
+    if (characterSprite && characterSprite.includes('elf')) {
+      console.warn("ATTENTION: Le sprite contient 'elf' - ce ne devrait pas être le cas par défaut!");
+    }
+  }, [characterSprite]);
+
   return (
     <>
     <QuizLayout
@@ -406,9 +515,9 @@ export default function GlobalQuizPage() {
       score={Math.min(score, QUIZ_CONFIG.MAX_SCORE)}
       currentIndex={0}
       total={QUIZ_CONFIG.MAX_SCORE}
-      visualImageSrc={globalPlaine.src}
+      visualImageSrc={visualImageSrc ?? globalPlaine.src}
       visualOverlayItems={platforms}
-      visualCharacterSrc={elfFemelle.src}
+      visualCharacterSrc={characterSprite || '/asset/Humain-male.png'}
       visualCharacterIndex={currentCharacterIndex}
       visualCharacterWidth="5%"
       visualCharacterStartTop="100%"
@@ -442,6 +551,7 @@ export default function GlobalQuizPage() {
             src="/asset/mage.png"
             alt="Mage présentateur"
             fill
+            sizes="(max-width: 768px) 80px, 112px"
             className="object-contain"
             priority
           />

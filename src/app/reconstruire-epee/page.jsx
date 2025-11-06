@@ -217,8 +217,26 @@ export default function ReconstruireEpeePage() {
   const isLastChallenge = currentChallengeIndex === challenges.length - 1;
   const allChallengesCompleted = Object.keys(results).length === challenges.length;
 
+  // Sauvegarder la progression (pour le Boss Final) quand les résultats sont affichés
+  useEffect(() => {
+    const completed = Object.keys(results).length === challenges.length;
+    if (showResult || completed) {
+      const percent = Math.round((score / challenges.length) * 100);
+      try {
+        localStorage.setItem("epeeProgress", String(percent));
+        // Si échec (< 75%), l’utilisateur perd une vie côté Boss Final
+        if (percent < 75) {
+          const currentPenalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
+          localStorage.setItem("bossLivesPenalty", String(currentPenalty + 1));
+        }
+      } catch {}
+    }
+  }, [showResult, results, score]);
+
   return (
     <div className="flex min-h-screen items-center justify-center font-sans relative">
+      {/* Bouton fixe retour au Boss Final */}
+      
       <div className="w-full max-w-4xl px-6 relative z-10">
         {/* En-tête */}
         <div className="mb-8 text-center">
@@ -231,6 +249,7 @@ export default function ReconstruireEpeePage() {
             </div>
           </div>
         </div>
+        
 
         {!showResult ? (
           <>
@@ -391,9 +410,9 @@ export default function ReconstruireEpeePage() {
               })}
             </div>
 
-            {/* Bouton réessayer uniquement si c'est le dernier défi */}
+            {/* Boutons de fin uniquement si c'est le dernier défi */}
             {isLastChallenge && (
-              <div className="text-center">
+              <div className="flex gap-4 justify-center">
                 <button
                   onClick={() => {
                     setResults({});
@@ -404,6 +423,12 @@ export default function ReconstruireEpeePage() {
                   className="rounded-lg font-pixel bg-zinc-800 px-8 py-4 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 border-2 border-transparent hover:border-white"
                 >
                   RECOMMENCER
+                </button>
+                <button
+                  onClick={() => router.push('/boss-final')}
+                  className="rounded-lg font-pixel bg-zinc-800 px-8 py-4 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 border-2 border-transparent hover:border-white"
+                >
+                  RETOUR AU BOSS FINAL
                 </button>
               </div>
             )}

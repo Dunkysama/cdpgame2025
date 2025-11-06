@@ -84,16 +84,47 @@ export default function HomePage() {
 
   const handlePlay = () => {
     if (selectedPseudo) {
+      // Sauvegarder le personnage sélectionné dans localStorage
+      if (typeof window !== "undefined") {
+        console.log("Sauvegarde du personnage sélectionné:", selectedPseudo);
+        localStorage.setItem("selectedCharacter", JSON.stringify(selectedPseudo));
+        // Vérifier ce qui a été sauvegardé
+        const saved = localStorage.getItem("selectedCharacter");
+        console.log("Données sauvegardées dans localStorage:", saved);
+      }
       router.push("/carte");
     }
+  };
+
+  // Fonction pour normaliser le sexe depuis la BD vers le format attendu
+  const normalizeSexe = (sexe) => {
+    if (!sexe) return 'male';
+    const s = sexe.toString().toLowerCase();
+    // Gérer les formats de la BD : 'Femme' -> 'femelle', 'Homme' -> 'male'
+    if (s === 'femme' || s === 'femelle') return 'femelle';
+    if (s === 'homme' || s === 'male') return 'male';
+    return s; // Fallback si format inconnu
+  };
+
+  // Fonction pour normaliser la race depuis la BD vers le format attendu
+  const normalizeRace = (race) => {
+    if (!race) return 'humain';
+    const r = race.toString().toLowerCase();
+    // Gérer les formats de la BD : 'Elfe' -> 'elfe', 'Nain' -> 'nain', 'Humain' -> 'humain'
+    if (r === 'elfe') return 'elfe';
+    if (r === 'nain') return 'nain';
+    if (r === 'humain') return 'humain';
+    return r; // Fallback si format inconnu
   };
 
   const getAvatarImagePath = (avatar) => {
     // Si l'avatar vient de la BD et fournit une imagePath, l'utiliser
     if (avatar.imagePath) return avatar.imagePath;
-    // Sinon, construire le chemin avec le nouveau format
-    const raceCapitalized = (avatar.race || 'humain').charAt(0).toUpperCase() + (avatar.race || 'humain').slice(1);
-    const sexeCapitalized = (avatar.sexe || 'male').charAt(0).toUpperCase() + (avatar.sexe || 'male').slice(1);
+    // Sinon, construire le chemin avec le nouveau format en normalisant depuis la BD
+    const raceNormalized = normalizeRace(avatar.race);
+    const sexeNormalized = normalizeSexe(avatar.sexe);
+    const raceCapitalized = raceNormalized.charAt(0).toUpperCase() + raceNormalized.slice(1);
+    const sexeCapitalized = sexeNormalized.charAt(0).toUpperCase() + sexeNormalized.slice(1);
     return `/asset/${raceCapitalized}-${sexeCapitalized}.png`;
   };
 
@@ -294,25 +325,6 @@ export default function HomePage() {
           >
             JOUER
           </button>
-
-          <Link
-            href="/furie-sanguinaire"
-            className="w-full max-w-md rounded-lg font-pixel bg-zinc-900 px-8 py-6 text-lg font-semibold text-white transition-colors hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 mx-auto text-center block"
-          >
-            FURIE
-          </Link>
-          <Link
-            href="/code-complet"
-            className="w-full max-w-md rounded-lg font-pixel bg-zinc-900 px-8 py-6 text-lg font-semibold text-white transition-colors hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 mx-auto text-center block"
-          >
-            SORT
-          </Link>
-          <Link
-            href="/reconstruire-epee"
-            className="w-full max-w-md rounded-lg font-pixel bg-zinc-900 px-8 py-6 text-lg font-semibold text-white transition-colors hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 mx-auto text-center block"
-          >
-            ÉPÉE
-          </Link>
         </div>
 
         {showConfirmDialog && (

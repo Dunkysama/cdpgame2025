@@ -44,12 +44,14 @@ export default function RegisterPage() {
 
     alert("✅ Compte créé !");
     setEmail(""); setUsername(""); setPassword(""); setConfirmPassword("");
+    // Redirection automatique vers la page de connexion après création
+    router.push("/connexion");
   } catch (err) {
     alert("❌ " + (err.message || "Erreur serveur"));
   } finally {
     setIsLoading(false);
   }
-};
+}; 
 
   return (
     <div className="flex min-h-screen items-center justify-center font-sans relative">
