@@ -239,11 +239,6 @@ export default function GlobalQuizPage() {
       // Bonne réponse : incrémenter le score
       setScore((s) => {
         const nextScore = Math.min(s + 1, QUIZ_CONFIG.MAX_SCORE);
-        // Ouvrir le marchand à la 8e bonne réponse
-        if (nextScore === QUIZ_CONFIG.MAX_SCORE && !hasVisitedMerchant) {
-          setIsMerchantOpen(true);
-          setHasVisitedMerchant(true);
-        }
         return nextScore;
       });
 
@@ -294,14 +289,9 @@ export default function GlobalQuizPage() {
   const applyItemEffect = (itemId) => {
     switch (itemId) {
       case "coeur":
-        setLives((l) => {
-          // À plein, acheter un cœur augmente la capacité ET la vie
-          if (l >= maxLives) {
-            setMaxLives((m) => m + 1);
-            return l + 1;
-          }
-          return Math.min(maxLives, l + 1);
-        });
+        // Achat de cœur : augmenter la capacité ET ajouter un cœur plein
+        setMaxLives((m) => m + 1);
+        setLives((l) => l + 1);
         break;
       case "tokenIndice": // Potion
         setLives(maxLives);

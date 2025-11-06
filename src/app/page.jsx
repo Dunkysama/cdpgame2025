@@ -11,22 +11,75 @@ export default function HomePage() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [avatarToDelete, setAvatarToDelete] = useState(null);
   const [imageErrors, setImageErrors] = useState({});
+  const [source, setSource] = useState("local"); // 'local' | 'server'
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Charger les avatars depuis localStorage au montage
+  // Charger les avatars: préférer la BD si l'utilisateur est connecté, sinon fallback localStorage
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedAvatars = localStorage.getItem("avatars");
-      if (savedAvatars) {
-        try {
-          const parsedAvatars = JSON.parse(savedAvatars);
-          setAvatars(parsedAvatars);
-        } catch (e) {
-          console.error("Erreur lors du chargement des avatars:", e);
-          console.error("Erreur lors du chargement des avatars:", e);
+    let cancelled = false;
+    (async () => {
+      try {
+        // Vérifie l'authentification
+        const meRes = await fetch("/api/me", { cache: "no-store" });
+        if (meRes.ok) {
+          const me = await meRes.json();
+          if (!cancelled) {
+            console.log("[client] Session active:", {
+              id: me.session?.id,
+              iat: me.session?.iat,
+              exp: me.session?.exp,
+              user: me.user,
+            });
+          }
+          // Auth OK -> récupérer les personnages depuis la BD
+          const persRes = await fetch("/api/personnages", { cache: "no-store" });
+          if (persRes.ok) {
+            const data = await persRes.json();
+            if (!cancelled) {
+              setAvatars(data.personnages || []);
+              setSource("server");
+            }
+          } else {
+            // Si l'API échoue, fallback localStorage
+            if (!cancelled) loadFromLocal();
+          }
+        } else {
+          // Non authentifié -> localStorage
+          if (!cancelled) {
+            console.log("[client] Non connecté (pas de session valide)");
+            loadFromLocal();
+          }
+        }
+      } catch (e) {
+        console.error("Erreur chargement avatars:", e);
+        if (!cancelled) {
+          loadFromLocal();
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    function loadFromLocal() {
+      if (typeof window !== "undefined") {
+        const savedAvatars = localStorage.getItem("avatars");
+        if (savedAvatars) {
+          try {
+            const parsedAvatars = JSON.parse(savedAvatars);
+            setAvatars(parsedAvatars);
+            setSource("local");
+          } catch (e) {
+            console.error("Erreur lors du chargement des avatars:", e);
+          }
+        } else {
+          setAvatars([]);
+          setSource("local");
         }
       }
     }
+
+    return () => { cancelled = true; };
   }, []);
 
   const handlePlay = () => {
@@ -36,37 +89,65 @@ export default function HomePage() {
   };
 
   const getAvatarImagePath = (avatar) => {
-    // Si l'avatar a déjà un imagePath sauvegardé, l'utiliser
-    if (avatar.imagePath) {
-      return avatar.imagePath;
-    }
+    // Si l'avatar vient de la BD et fournit une imagePath, l'utiliser
+    if (avatar.imagePath) return avatar.imagePath;
     // Sinon, construire le chemin avec le nouveau format
-    // Format des fichiers : Race-Sexe.png (ex: Humain-male.png)
     const raceCapitalized = (avatar.race || 'humain').charAt(0).toUpperCase() + (avatar.race || 'humain').slice(1);
     const sexeCapitalized = (avatar.sexe || 'male').charAt(0).toUpperCase() + (avatar.sexe || 'male').slice(1);
     return `/asset/${raceCapitalized}-${sexeCapitalized}.png`;
   };
 
   const handleDeleteClick = (avatar, index, e) => {
-    e.stopPropagation(); // Empêcher la sélection de l'avatar
+    e.stopPropagation();
+    
     setAvatarToDelete({ avatar, index });
     setShowConfirmDialog(true);
   };
 
   const handleConfirmDelete = () => {
+    if (source === "server") {
+      (async () => {
+        try {
+          const id = avatarToDelete?.avatar?.id;
+          if (!id) throw new Error("ID du personnage manquant");
+
+          // Suppression côté BD (soft delete)
+          const delRes = await fetch(`/api/personnages?id=${encodeURIComponent(id)}`, {
+            method: "DELETE",
+          });
+
+          if (!delRes.ok) {
+            const msg = await delRes.text().catch(() => "");
+            throw new Error(`Échec de la suppression (${delRes.status}) ${msg}`);
+          }
+
+          // Recharger la liste depuis la BD
+          const persRes = await fetch("/api/personnages", { cache: "no-store" });
+          if (persRes.ok) {
+            const data = await persRes.json();
+            setAvatars(data.personnages || []);
+            // Si on avait sélectionné ce personnage, on désélectionne
+            if (selectedPseudo && selectedPseudo.id === id) {
+              setSelectedPseudo(null);
+            }
+          }
+        } catch (e) {
+          console.error("Erreur suppression serveur:", e);
+        } finally {
+          setShowConfirmDialog(false);
+          setAvatarToDelete(null);
+        }
+      })();
+      return;
+    }
     if (avatarToDelete && typeof window !== "undefined") {
-      // Récupérer les avatars depuis localStorage
       const savedAvatars = localStorage.getItem("avatars");
       if (savedAvatars) {
         try {
           let avatarsArray = JSON.parse(savedAvatars);
-          // Supprimer l'avatar à l'index spécifié
           avatarsArray = avatarsArray.filter((_, index) => index !== avatarToDelete.index);
-          // Sauvegarder dans localStorage
           localStorage.setItem("avatars", JSON.stringify(avatarsArray));
-          // Mettre à jour l'état
           setAvatars(avatarsArray);
-          // Si l'avatar supprimé était sélectionné, désélectionner
           if (selectedPseudo === avatarToDelete.avatar) {
             setSelectedPseudo(null);
           }
@@ -75,7 +156,6 @@ export default function HomePage() {
         }
       }
     }
-    // Fermer la popup
     setShowConfirmDialog(false);
     setAvatarToDelete(null);
   };
@@ -89,9 +169,7 @@ export default function HomePage() {
     if (!minutes) return "0 min";
     const heures = Math.floor(minutes / 60);
     const mins = minutes % 60;
-    if (heures > 0) {
-      return `${heures}h ${mins}min`;
-    }
+    if (heures > 0) return `${heures}h ${mins}min`;
     return `${mins}min`;
   };
 
@@ -103,7 +181,7 @@ export default function HomePage() {
           <div className="flex justify-between items-center mb-8">
             <div className="flex-1"></div>
             <h1 className="text-4xl font-bold font-pixel text-white flex-1">
-              VOS AVATARS
+              {source === 'server' ? 'VOS PERSONNAGES' : 'VOS AVATARS'}
             </h1>
             <div className="flex-1 flex justify-end">
               <Link
@@ -118,79 +196,79 @@ export default function HomePage() {
 
         {/* Section Pseudo */}
         <div className="mb-8">
-          <div className="flex gap-4 justify-center flex-wrap">
-            {/* Afficher les avatars créés */}
-            {avatars.map((avatar, index) => (
-              <div key={index} className="flex flex-col items-center relative group">
-                <div
-                  onClick={() => setSelectedPseudo(avatar)}
-                  className={`w-32 h-32 rounded-lg border-2 transition-all overflow-hidden relative cursor-pointer ${
-                    selectedPseudo === avatar
-                      ? "bg-zinc-900 border-white"
-                      : "bg-zinc-800 border-zinc-600 hover:bg-zinc-700 hover:border-white"
-                  }`}
-                >
-                  <Image
-                    src={getAvatarImagePath(avatar)}
-                    alt={`Avatar ${avatar.race} ${avatar.sexe}`}
-                    fill
-                    className="object-contain"
-                    unoptimized
-                    onError={(e) => {
-                      setImageErrors(prev => ({ ...prev, [index]: true }));
-                      e.target.style.display = 'none';
-                    }}
-                    onLoad={() => {
-                      setImageErrors(prev => ({ ...prev, [index]: false }));
-                    }}
-                  />
-                  {/* Placeholder si l'image n'existe pas ou n'a pas encore chargé */}
-                  {imageErrors[index] !== false && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-zinc-800 pointer-events-none z-0">
-                      <div className="text-center">
-                        <div className="text-3xl mb-1">🎮</div>
-                      </div>
-                    </div>
-                  )}
-                  {/* Bouton de suppression */}
-                  <button
-                    onClick={(e) => handleDeleteClick(avatar, index, e)}
-                    className="absolute top-0 right-0 w-7 h-7 bg-red-600 hover:bg-red-700 text-white rounded-bl-lg flex items-center justify-center text-sm font-pixel transition-colors z-10"
-                    aria-label="Supprimer l'avatar"
+          {loading ? (
+            <div className="text-center text-white font-pixel">Chargement...</div>
+          ) : (
+            <div className="flex gap-4 justify-center flex-wrap">
+              {avatars.map((avatar, index) => (
+                <div key={avatar.id ?? index} className="flex flex-col items-center relative group">
+                  <div
+                    onClick={() => setSelectedPseudo(avatar)}
+                    className={`w-32 h-32 rounded-lg border-2 transition-all overflow-hidden relative cursor-pointer ${
+                      selectedPseudo === avatar
+                        ? "bg-zinc-900 border-white"
+                        : "bg-zinc-800 border-zinc-600 hover:bg-zinc-700 hover:border-white"
+                    }`}
                   >
-                    ×
-                  </button>
-                </div>
-                {/* Affichage du pseudo */}
-                <p className="text-xs font-pixel text-white mt-2 text-center max-w-[128px] truncate">
-                  {avatar.pseudo || "Sans nom"}
-                </p>
-                {/* Tooltip avec les informations au hover */}
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-zinc-900 border-2 border-white rounded-lg p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
-                  <div className="space-y-2">
-                    <div className="border-b border-zinc-700 pb-2">
-                      <p className="text-xs font-pixel text-white font-bold">
-                        {avatar.pseudo || "Sans nom"}
-                      </p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-pixel text-white/80">
-                        <span className="text-white/60">Race:</span> {avatar.race?.toUpperCase() || "N/A"}
-                      </p>
-                      <p className="text-[10px] font-pixel text-white/80">
-                        <span className="text-white/60">Sexe:</span> {avatar.sexe?.toUpperCase() || "N/A"}
-                      </p>
-                      <p className="text-[10px] font-pixel text-white/80">
-                        <span className="text-white/60">Niveau:</span> {avatar.niveau || 1}
-                      </p>
-                      <p className="text-[10px] font-pixel text-white/80">
-                        <span className="text-white/60">Temps de jeu:</span> {formatTempsDeJeu(avatar.tempsDeJeu || 0)}
-                      </p>
+                    <Image
+                      src={getAvatarImagePath(avatar)}
+                      alt={`Avatar ${avatar.race || ''} ${avatar.sexe || ''}`}
+                      fill
+                      className="object-contain"
+                      unoptimized
+                      onError={(e) => {
+                        setImageErrors(prev => ({ ...prev, [index]: true }));
+                        e.target.style.display = 'none';
+                      }}
+                      onLoad={() => {
+                        setImageErrors(prev => ({ ...prev, [index]: false }));
+                      }}
+                    />
+                    {imageErrors[index] !== false && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-zinc-800 pointer-events-none z-0">
+                        <div className="text-center">
+                          <div className="text-3xl mb-1">🎮</div>
+                        </div>
+                      </div>
+                    )}
+                    {/* Bouton de suppression (actif pour local et BD) */}
+                    <button
+                      onClick={(e) => handleDeleteClick(avatar, index, e)}
+                      className={`absolute top-0 right-0 w-7 h-7 bg-red-600 hover:bg-red-700 text-white rounded-bl-lg flex items-center justify-center text-sm font-pixel transition-colors z-10`}
+                      aria-label="Supprimer l'avatar"
+                      title={'Supprimer'}
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <p className="text-xs font-pixel text-white mt-2 text-center max-w-32 truncate">
+                    {avatar.pseudo || "Sans nom"}
+                  </p>
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-zinc-900 border-2 border-white rounded-lg p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+                    <div className="space-y-2">
+                      <div className="border-b border-zinc-700 pb-2">
+                        <p className="text-xs font-pixel text-white font-bold">
+                          {avatar.pseudo || "Sans nom"}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-pixel text-white/80">
+                          <span className="text-white/60">Race:</span> {(avatar.race || "N/A").toString().toUpperCase()}
+                        </p>
+                        <p className="text-[10px] font-pixel text-white/80">
+                          <span className="text-white/60">Sexe:</span> {(avatar.sexe || "N/A").toString().toUpperCase()}
+                        </p>
+                        <p className="text-[10px] font-pixel text-white/80">
+                          <span className="text-white/60">Niveau:</span> {avatar.niveau || 1}
+                        </p>
+                        <p className="text-[10px] font-pixel text-white/80">
+                          <span className="text-white/60">Temps de jeu:</span> {formatTempsDeJeu(avatar.tempsDeJeu || 0)}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
 
             {/* Bouton + (Création d'avatar) */}
             {avatars.length < 3 && (
@@ -204,6 +282,7 @@ export default function HomePage() {
               </div>
             )}
           </div>
+          )}
         </div>
 
         {/* Bouton Jouer */}
@@ -236,7 +315,6 @@ export default function HomePage() {
           </Link>
         </div>
 
-        {/* Popup de confirmation de suppression */}
         {showConfirmDialog && (
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
             <div className="bg-zinc-900 border-2 border-white rounded-lg p-6 max-w-md mx-4">

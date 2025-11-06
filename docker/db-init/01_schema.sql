@@ -18,19 +18,24 @@ CREATE TABLE Badges(
 );
 
 CREATE TABLE Personnages(
-   id_utilisateur INTEGER,
+   id_personnage SERIAL,
    pseudo VARCHAR(50)  NOT NULL,
    chemin_avatar TEXT NOT NULL,
-   PRIMARY KEY(id_utilisateur),
+   race VARCHAR(16)  NOT NULL,
+   sexe VARCHAR(16)  NOT NULL,
+   temps_de_jeu INTEGER,
+   date_suppression TIMESTAMP,
+   id_utilisateur INTEGER NOT NULL,
+   PRIMARY KEY(id_personnage),
    FOREIGN KEY(id_utilisateur) REFERENCES Utilisateurs(id_utilisateur)
 );
 
 CREATE TABLE Themes(
    id_theme SERIAL,
    nom_theme VARCHAR(64)  NOT NULL,
-   id_utilisateur INTEGER,
+   id_personnage INTEGER,
    PRIMARY KEY(id_theme),
-   FOREIGN KEY(id_utilisateur) REFERENCES Personnages(id_utilisateur)
+   FOREIGN KEY(id_personnage) REFERENCES Personnages(id_personnage)
 );
 
 CREATE TABLE Questions(

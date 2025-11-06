@@ -66,7 +66,7 @@ const handleSubmit = async (e) => {
               htmlFor="email"
               className="block text-xs font-medium font-pixel text-white mb-2"
             >
-            NOM D'UTILISATEUR
+            E-MAIL UTILISATEUR
             </label>
             <input
               id="email"
