@@ -31,60 +31,77 @@ export default function AvatarCreationPage() {
     setImageError(false);
   };
 
-  const handleValidate = () => {
+  const handleValidate = async () => {
     // Vérifier que le pseudo est rempli
     if (!pseudo.trim()) {
       alert("Veuillez entrer un pseudo");
       return;
     }
 
-    // Vérifier le nombre maximum d'avatars
+    const payload = {
+      pseudo: pseudo.trim(),
+      race,
+      sexe,
+      imagePath: getAvatarImagePath(),
+    };
+
+    // Tenter la création côté serveur si connecté
+    try {
+      const meRes = await fetch("/api/me", { cache: "no-store" });
+      if (meRes.ok) {
+        const createRes = await fetch("/api/personnages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!createRes.ok) {
+          const err = await createRes.json().catch(() => ({}));
+          const msg = err?.error || `Création refusée (${createRes.status})`;
+          alert(msg);
+          return;
+        }
+
+        // Succès côté serveur
+        router.push("/");
+        return;
+      }
+    } catch (e) {
+      // Ignore: on tombera sur la création locale
+      console.warn("Création serveur indisponible, bascule en local:", e);
+    }
+
+    // Fallback: création locale (non connecté)
     if (typeof window !== "undefined") {
+      // Vérifier le nombre maximum d'avatars (local uniquement)
       const savedAvatars = localStorage.getItem("avatars");
       if (savedAvatars) {
         try {
           const avatars = JSON.parse(savedAvatars);
           if (avatars.length >= 3) {
-            alert("Vous ne pouvez pas créer plus de 3 avatars");
+            alert("Vous ne pouvez pas créer plus de 3 avatars (mode local)");
             return;
           }
         } catch (e) {
           console.error("Erreur lors de la vérification des avatars:", e);
         }
       }
-    }
 
-    // Créer l'objet avatar
-    const newAvatar = {
-      pseudo: pseudo.trim(),
-      race,
-      sexe,
-      imagePath: getAvatarImagePath(),
-      tempsDeJeu: 0, // En minutes
-      niveau: 1,
-      createdAt: new Date().toISOString(),
-    };
+      const newAvatar = {
+        ...payload,
+        tempsDeJeu: 0,
+        niveau: 1,
+        createdAt: new Date().toISOString(),
+      };
 
-    // Récupérer les avatars existants depuis localStorage
-    if (typeof window !== "undefined") {
       let avatars = [];
-      const savedAvatars = localStorage.getItem("avatars");
       if (savedAvatars) {
-        try {
-          avatars = JSON.parse(savedAvatars);
-        } catch (e) {
-          console.error("Erreur lors du chargement des avatars:", e);
-        }
+        try { avatars = JSON.parse(savedAvatars); } catch {}
       }
-
-      // Ajouter le nouvel avatar
       avatars.push(newAvatar);
-
-      // Sauvegarder dans localStorage
       localStorage.setItem("avatars", JSON.stringify(avatars));
     }
 
-    // Rediriger vers la page d'accueil après création
     router.push("/");
   };
 
@@ -200,11 +217,17 @@ export default function AvatarCreationPage() {
               </div>
             </div>
 
-            {/* Bouton de validation */}
-            <div className="pt-4">
+            {/* Boutons Retour + Valider */}
+            <div className="pt-4 flex gap-3">
+              <button
+                onClick={() => router.push("/")}
+                className="flex-1 rounded-lg font-pixel bg-zinc-800 px-6 py-4 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 border-2 border-transparent hover:border-zinc-600"
+              >
+                ANNULER
+              </button>
               <button
                 onClick={handleValidate}
-                className="w-full rounded-lg font-pixel bg-zinc-900 px-6 py-4 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                className="flex-1 rounded-lg font-pixel bg-zinc-900 px-6 py-4 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
               >
                 VALIDER
               </button>

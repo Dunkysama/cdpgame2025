@@ -9,7 +9,7 @@ import DeconnexionButton from "../components/DeconnexionButton";
 export default function ProfilPage() {
   const [avatars, setAvatars] = useState([]);
   const [profilPseudo, setProfilPseudo] = useState("Joueur");
-  const [profilImage, setProfilImage] = useState("/avatars/humain_male.png");
+  const [profilImage, setProfilImage] = useState("/asset/humain_male.png");
   const [profilEmail, setProfilEmail] = useState("");
   const [showEditModal, setShowEditModal] = useState(false);
   const [editPseudo, setEditPseudo] = useState("");
@@ -31,6 +31,23 @@ export default function ProfilPage() {
   // Charger les données depuis localStorage au montage
   useEffect(() => {
     if (typeof window !== "undefined") {
+      // 1) Tenter de charger depuis l'API (session) puis fallback localStorage
+      (async () => {
+        try {
+          const meRes = await fetch("/api/me", { cache: "no-store" });
+          if (meRes.ok) {
+            const me = await meRes.json();
+            if (me?.user?.username) setProfilPseudo(me.user.username);
+            if (me?.user?.email) setProfilEmail(me.user.email);
+          }
+            // Charger les personnages du joueur
+            const persRes = await fetch("/api/personnages", { cache: "no-store" });
+            if (persRes.ok) {
+              const data = await persRes.json();
+              setAvatars(Array.isArray(data.personnages) ? data.personnages : []);
+            }
+        } catch {}
+      })();
       // Charger le pseudo du profil utilisateur
       const savedPseudo = localStorage.getItem("profilPseudo");
       if (savedPseudo) {
@@ -45,11 +62,11 @@ export default function ProfilPage() {
         setEditImage(savedImage);
       }
 
-      // Charger l'email du profil utilisateur
+      // Charger l'email du profil utilisateur (fallback si pas de session)
       const savedEmail = localStorage.getItem("profilEmail");
       if (savedEmail) {
-        setProfilEmail(savedEmail);
-        setEditEmail(savedEmail);
+        setProfilEmail((prev) => prev || savedEmail);
+        setEditEmail((prev) => prev || savedEmail);
       }
 
       // Charger les avatars (personnages)
@@ -247,12 +264,33 @@ export default function ProfilPage() {
         return;
       }
 
-      // Créer une URL d'object pour prévisualiser l'image
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEditImage(reader.result);
-      };
-      reader.readAsDataURL(file);
+      // Upload côté serveur pour enregistrer dans public/profil_image
+      (async () => {
+        try {
+          const form = new FormData();
+          form.append("file", file);
+          form.append("pseudo", profilPseudo || "");
+
+          const upRes = await fetch("/api/profil/image", { method: "POST", body: form });
+          if (!upRes.ok) {
+            const err = await upRes.json().catch(() => ({}));
+            throw new Error(err?.error || `Erreur upload (${upRes.status})`);
+          }
+          const data = await upRes.json();
+          if (data?.path) {
+            // Utiliser le chemin public renvoyé pour l'aperçu et l'enregistrement ultérieur
+            setEditImage(data.path);
+          }
+        } catch (err) {
+          console.error("Upload image profil échoué:", err);
+          // Fallback: aperçu local uniquement si l'upload échoue
+          try {
+            const reader = new FileReader();
+            reader.onloadend = () => setEditImage(reader.result);
+            reader.readAsDataURL(file);
+          } catch {}
+        }
+      })();
     }
   };
 
@@ -262,7 +300,13 @@ export default function ProfilPage() {
   };
 
   const getAvatarImagePath = (avatar) => {
-    return `/avatars/${avatar.race}_${avatar.sexe}.png`;
+     // Priorité au chemin renvoyé par le serveur
+     if (avatar?.imagePath) return avatar.imagePath;
+     // Sinon, reconstituer depuis race/sexe avec le format /asset/Race-Sexe.png
+     const race = (avatar?.race || "Humain").toString();
+     const sexe = (avatar?.sexe || "male").toString();
+     const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+     return `/asset/${cap(race)}-${cap(sexe)}.png`;
   };
 
   const handleBadgeClick = (badgeId) => {
@@ -294,7 +338,7 @@ export default function ProfilPage() {
         <div className="mb-8 pb-8 border-b-2 border-zinc-700">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             {/* Photo de profil circulaire */}
-            <div className="relative w-32 h-32 md:w-40 md:h-40 flex-shrink-0">
+            <div className="relative w-32 h-32 md:w-40 md:h-40 shrink-0">
               <div className="w-full h-full rounded-full border-4 border-white overflow-hidden bg-zinc-800 relative">
                 {profilImage ? (
                   profilImage.startsWith('data:') ? (
@@ -359,7 +403,7 @@ export default function ProfilPage() {
         {/* Section Badges */}
         <div className="mt-8 mb-8 pb-8 border-b-2 border-zinc-700">
           <div className="flex flex-col md:flex-row items-start gap-6">
-            <h3 className="text-xl font-bold font-pixel text-white md:w-32 flex-shrink-0">
+            <h3 className="text-xl font-bold font-pixel text-white md:w-32 shrink-0">
               Badges
             </h3>
             <div className="flex mt-8 ml-20 gap-8 flex-wrap">
@@ -426,7 +470,7 @@ export default function ProfilPage() {
         {/* Section Personnages */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row items-start gap-6">
-            <h3 className="text-xl font-bold font-pixel text-white md:w-32 flex-shrink-0">
+            <h3 className="text-xl font-bold font-pixel text-white md:w-32 shrink-0">
               Personnages
             </h3>
             <div className="flex ml-20 mt-8 gap-20 flex-wrap">
@@ -483,7 +527,7 @@ export default function ProfilPage() {
             <div className="bg-zinc-900 border-2 border-white rounded-lg p-8 max-w-3xl mx-4 w-full">
               <div className="flex flex-col md:flex-row gap-8">
                 {/* Section gauche - Avatar circulaire */}
-                <div className="flex-shrink-0 flex flex-col items-center md:items-start gap-4">
+                <div className="shrink-0 flex flex-col items-center md:items-start gap-4">
                   <div className="relative w-48 h-48 md:w-56 md:h-56">
                     <div className="w-full h-full rounded-full border-4 border-white overflow-hidden bg-zinc-800 relative">
                       {(editImage || profilImage) ? (
