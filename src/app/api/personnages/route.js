@@ -45,7 +45,8 @@ export async function GET() {
       pseudo: r.pseudo,
       sexe: r.sexe || null,
       race: r.race || null,
-      imagePath: r.chemin_avatar || null,
+      // Fallback avatar par défaut si aucun chemin en BDD
+      imagePath: r.chemin_avatar || "/asset/Humain-male.png",
       tempsDeJeu: typeof r.temps_de_jeu === "number" ? r.temps_de_jeu : 0,
     }));
 

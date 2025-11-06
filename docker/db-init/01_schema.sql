@@ -7,6 +7,7 @@ CREATE TABLE Utilisateurs(
    mot_de_passe VARCHAR(128)  NOT NULL,
    nom_utilisateur VARCHAR(128)  NOT NULL,
    date_inscription TIMESTAMP,
+   chemin_photo_profil TEXT,
    PRIMARY KEY(id_utilisateur),
    UNIQUE(email)
 );
@@ -18,24 +19,19 @@ CREATE TABLE Badges(
 );
 
 CREATE TABLE Personnages(
-   id_personnage SERIAL,
+   id_utilisateur INTEGER,
    pseudo VARCHAR(50)  NOT NULL,
    chemin_avatar TEXT NOT NULL,
-   race VARCHAR(16)  NOT NULL,
-   sexe VARCHAR(16)  NOT NULL,
-   temps_de_jeu INTEGER,
-   date_suppression TIMESTAMP,
-   id_utilisateur INTEGER NOT NULL,
-   PRIMARY KEY(id_personnage),
+   PRIMARY KEY(id_utilisateur),
    FOREIGN KEY(id_utilisateur) REFERENCES Utilisateurs(id_utilisateur)
 );
 
 CREATE TABLE Themes(
    id_theme SERIAL,
    nom_theme VARCHAR(64)  NOT NULL,
-   id_personnage INTEGER,
+   id_utilisateur INTEGER,
    PRIMARY KEY(id_theme),
-   FOREIGN KEY(id_personnage) REFERENCES Personnages(id_personnage)
+   FOREIGN KEY(id_utilisateur) REFERENCES Personnages(id_utilisateur)
 );
 
 CREATE TABLE Questions(
