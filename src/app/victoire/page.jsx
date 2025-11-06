@@ -7,6 +7,13 @@ export default function VictoryPage() {
   const [confettis, setConfettis] = useState([]);
 
   useEffect(() => {
+    // Fin de run du Boss: autoriser une nouvelle tentative ultérieure
+    try {
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("bossRunActive");
+      }
+    } catch {}
+
     // Créer des confettis avec différentes formes et couleurs
     const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ff8800', '#ff0088'];
     const newConfettis = [];

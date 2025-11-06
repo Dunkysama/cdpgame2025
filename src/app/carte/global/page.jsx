@@ -153,6 +153,13 @@ export default function GlobalQuizPage(props) {
   // Redirection Game Over quand il n'y a plus de vies
   useEffect(() => {
     if (lives <= 0) {
+      // Remettre les pièces à 0 à la mort
+      setGold(0);
+      try {
+        if (typeof window !== "undefined") {
+          localStorage.setItem("playerGold", "0");
+        }
+      } catch {}
       router.push("/game-over");
     }
   }, [lives, router]);
@@ -258,6 +265,27 @@ export default function GlobalQuizPage(props) {
         localStorage.setItem("playerGold", "0");
       }
     }
+  }, []);
+
+  // Remettre l'or à 0 quand l'utilisateur quitte la page globale
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      try {
+        localStorage.setItem("playerGold", "0");
+      } catch {}
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("beforeunload", handleBeforeUnload);
+    }
+    return () => {
+      // Sur démontage (changement de route), remettre à 0
+      try {
+        localStorage.setItem("playerGold", "0");
+      } catch {}
+      if (typeof window !== "undefined") {
+        window.removeEventListener("beforeunload", handleBeforeUnload);
+      }
+    };
   }, []);
 
   useEffect(() => {

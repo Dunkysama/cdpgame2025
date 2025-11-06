@@ -117,6 +117,22 @@ export default function BossFinalPage() {
   // Progression des mini-jeux (persistée côté client)
   const [miniProgress, setMiniProgress] = useState({ furie: 0, sort: 0, epee: 0 });
 
+  // Démarrer une nouvelle tentative de Boss: reset des progrès si aucune run active
+  useEffect(() => {
+    try {
+      if (typeof window !== "undefined") {
+        const runActive = sessionStorage.getItem("bossRunActive");
+        if (!runActive) {
+          sessionStorage.setItem("bossRunActive", "1");
+          localStorage.setItem("furieProgress", "0");
+          localStorage.setItem("sortProgress", "0");
+          localStorage.setItem("epeeProgress", "0");
+          setMiniProgress({ furie: 0, sort: 0, epee: 0 });
+        }
+      }
+    } catch {}
+  }, []);
+
   useEffect(() => {
     try {
       const furie = parseInt(localStorage.getItem("furieProgress") || "0", 10);
