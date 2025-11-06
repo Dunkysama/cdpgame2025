@@ -34,6 +34,16 @@ export default function GameOverPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Réinitialiser la progression des mini-jeux et les pénalités de vies
+  useEffect(() => {
+    try {
+      localStorage.removeItem("furieProgress");
+      localStorage.removeItem("sortProgress");
+      localStorage.removeItem("epeeProgress");
+      localStorage.removeItem("bossLivesPenalty");
+    } catch {}
+  }, []);
+
   return (
     <div className="flex min-h-screen items-center justify-center font-sans relative">
       <div className="w-full max-w-4xl px-6 relative z-10 text-center">

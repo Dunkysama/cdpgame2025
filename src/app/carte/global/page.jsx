@@ -26,7 +26,8 @@ const MAX_LIVES = 3;
 const TIMER_BONUS_SECONDS = 10;
 const TIMER_MAX = 30;
 
-export default function GlobalQuizPage() {
+export default function GlobalQuizPage(props) {
+  const { visualImageSrc } = props || {};
   const router = useRouter();
   // Charger toutes les questions depuis le JSON
   const allQuestions = useMemo(() => globalQuestionsData.questions, []);
@@ -45,8 +46,8 @@ export default function GlobalQuizPage() {
     return messages[Math.floor(Math.random() * messages.length)];
   }, []);
 
-  // État du quiz - on garde toujours la même question actuelle jusqu'à ce qu'elle soit remplacée
-  const initialQuestion = getRandomQuestion();
+  // État du quiz – question initiale déterministe pour éviter les erreurs d’hydratation
+  const initialQuestion = allQuestions.length ? allQuestions[0] : null;
   const [currentQuestion, setCurrentQuestion] = useState(initialQuestion);
   const [answered, setAnswered] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(null);
@@ -215,6 +216,13 @@ export default function GlobalQuizPage() {
 
   // Calculer si le quiz est terminé
   const isQuizFinished = score >= QUIZ_CONFIG.MAX_SCORE;
+
+  // À 8 bonnes réponses, rediriger vers la page Boss Final
+  useEffect(() => {
+    if (score >= QUIZ_CONFIG.MAX_SCORE) {
+      router.push("/boss-final");
+    }
+  }, [score, router]);
 
   const handleAnswer = (index) => {
     if (isMerchantOpen) return;
@@ -406,7 +414,7 @@ export default function GlobalQuizPage() {
       score={Math.min(score, QUIZ_CONFIG.MAX_SCORE)}
       currentIndex={0}
       total={QUIZ_CONFIG.MAX_SCORE}
-      visualImageSrc={globalPlaine.src}
+      visualImageSrc={visualImageSrc ?? globalPlaine.src}
       visualOverlayItems={platforms}
       visualCharacterSrc={elfFemelle.src}
       visualCharacterIndex={currentCharacterIndex}
