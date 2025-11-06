@@ -114,26 +114,70 @@ export default function BossFinalPage() {
   const [mageMessage, setMageMessage] = useState(mageMessagesData.welcome[0]);
   const [showMageMessage, setShowMageMessage] = useState(true);
 
-  // Progression des mini-jeux (persistée côté client)
+  // Progression des mini-jeux (persistée en base de données)
   const [miniProgress, setMiniProgress] = useState({ furie: 0, sort: 0, epee: 0 });
 
+  // Charger la progression des mini-jeux depuis la base de données
   useEffect(() => {
-    try {
-      const furie = parseInt(localStorage.getItem("furieProgress") || "0", 10);
-      const sort = parseInt(localStorage.getItem("sortProgress") || "0", 10);
-      const epee = parseInt(localStorage.getItem("epeeProgress") || "0", 10);
-      setMiniProgress({ furie, sort, epee });
-    } catch {}
-  }, []);
+    const loadProgress = async () => {
+      try {
+        if (typeof window !== "undefined") {
+          const savedCharacter = localStorage.getItem("selectedCharacter");
+          if (savedCharacter) {
+            const character = JSON.parse(savedCharacter);
+            const idPersonnage = character.id;
 
-  // Appliquer les pénalités de vies accumulées via les mini-jeux
-  useEffect(() => {
-    try {
-      const penalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
-      const startingLives = Math.max(0, BOSS_CONFIG.MAX_LIVES - Math.max(0, penalty));
-      setLives(startingLives);
-      setMaxLives(BOSS_CONFIG.MAX_LIVES);
-    } catch {}
+            if (idPersonnage) {
+              const response = await fetch(`/api/boss-mini-progress?idPersonnage=${idPersonnage}`, {
+                cache: "no-store",
+              });
+
+              if (response.ok) {
+                const data = await response.json();
+                if (data.progress) {
+                  setMiniProgress(data.progress);
+                }
+                if (data.penalty !== undefined) {
+                  const startingLives = Math.max(0, BOSS_CONFIG.MAX_LIVES - Math.max(0, data.penalty));
+                  setLives(startingLives);
+                  setMaxLives(BOSS_CONFIG.MAX_LIVES);
+                }
+                return; // Succès, on sort
+              }
+            }
+          }
+
+          // Fallback sur localStorage si pas d'ID de personnage ou erreur API
+          try {
+            const furie = parseInt(localStorage.getItem("furieProgress") || "0", 10);
+            const sort = parseInt(localStorage.getItem("sortProgress") || "0", 10);
+            const epee = parseInt(localStorage.getItem("epeeProgress") || "0", 10);
+            setMiniProgress({ furie, sort, epee });
+
+            const penalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
+            const startingLives = Math.max(0, BOSS_CONFIG.MAX_LIVES - Math.max(0, penalty));
+            setLives(startingLives);
+            setMaxLives(BOSS_CONFIG.MAX_LIVES);
+          } catch {}
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement de la progression:", error);
+        // Fallback sur localStorage en cas d'erreur
+        try {
+          const furie = parseInt(localStorage.getItem("furieProgress") || "0", 10);
+          const sort = parseInt(localStorage.getItem("sortProgress") || "0", 10);
+          const epee = parseInt(localStorage.getItem("epeeProgress") || "0", 10);
+          setMiniProgress({ furie, sort, epee });
+
+          const penalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
+          const startingLives = Math.max(0, BOSS_CONFIG.MAX_LIVES - Math.max(0, penalty));
+          setLives(startingLives);
+          setMaxLives(BOSS_CONFIG.MAX_LIVES);
+        } catch {}
+      }
+    };
+
+    loadProgress();
   }, []);
 
   const usedQuestionIds = useRef(new Set(initialQuestion ? [initialQuestion.id] : []));
@@ -290,6 +334,39 @@ export default function BossFinalPage() {
   // Redirection vers la victoire si le boss n'a plus de cœurs
   useEffect(() => {
     if (bossHeartsCount === 0) {
+      // Sauvegarder que le quiz global est complété dans la base de données
+      const saveQuizCompletion = async () => {
+        try {
+          // Récupérer le personnage sélectionné depuis localStorage
+          if (typeof window !== "undefined") {
+            const savedCharacter = localStorage.getItem("selectedCharacter");
+            if (savedCharacter) {
+              const character = JSON.parse(savedCharacter);
+              const idPersonnage = character.id;
+              
+              if (idPersonnage) {
+                // Appeler l'API pour sauvegarder dans la BDD
+                const response = await fetch("/api/quiz-completes", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    nomQuiz: "global",
+                    idPersonnage: idPersonnage,
+                  }),
+                });
+
+                if (!response.ok) {
+                  console.error("Erreur lors de la sauvegarde du quiz complété");
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Erreur lors de la sauvegarde du quiz complété:", error);
+        }
+      };
+
+      saveQuizCompletion();
       router.push("/victoire");
     }
   }, [bossHeartsCount, router]);
