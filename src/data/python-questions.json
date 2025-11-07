@@ -1,0 +1,175 @@
+{
+  "questions": [
+    {
+      "id": 1,
+      "level": "facile",
+      "question": "Que signifie le mot \"Python\" dans le langage de programmation Python ?",
+      "options": [
+        "Le nom vient des Monty Python",
+        "Un serpent particulier",
+        "Le nom d’un algorithme",
+        "Une combinaison hybride"
+      ],
+      "correctIndex": 0,
+      "hint": "Créé en référence à une troupe comique."
+    },
+    {
+      "id": 2,
+      "level": "facile",
+      "question": "Quel est le mot-clé pour afficher du texte en Python ?",
+      "options": ["print()", "echo()", "display()", "console.log()"],
+      "correctIndex": 0,
+      "hint": "Il imprime du texte dans le terminal."
+    },
+    {
+      "id": 3,
+      "level": "facile",
+      "question": "Quelle extension ont les fichiers Python ?",
+      "options": [".py", ".python", ".pt", ".p"],
+      "correctIndex": 0,
+      "hint": "Elle n’est composée que de deux lettres."
+    },
+    {
+      "id": 4,
+      "level": "facile",
+      "question": "Comment déclare-t-on une variable en Python ?",
+      "options": ["x = 10", "var x = 10", "int x = 10", "declare x 10"],
+      "correctIndex": 0,
+      "hint": "On attribue simplement une valeur."
+    },
+    {
+      "id": 5,
+      "level": "facile",
+      "question": "Quelle fonction permet d'obtenir la longueur d'une liste en Python ?",
+      "options": ["len()", "count()", "length()", "size()"],
+      "correctIndex": 0,
+      "hint": "C’est un mot court pour “length”."
+    },
+
+    {
+      "id": 6,
+      "level": "moyen",
+      "question": "Comment s’appelle le gestionnaire de paquets par défaut de Python ?",
+      "options": ["pip", "npm", "apt", "conda"],
+      "correctIndex": 0,
+      "hint": "Signifie “pip installs packages”."
+    },
+    {
+      "id": 7,
+      "level": "moyen",
+      "question": "Quel type de données représente une valeur booléenne en Python ?",
+      "options": ["True ou False", "1 ou 0", "‘yes’ ou ‘no’", "‘true’ ou ‘false’"],
+      "correctIndex": 0,
+      "hint": "Ces mots commencent par une majuscule."
+    },
+    {
+      "id": 8,
+      "level": "moyen",
+      "question": "Quelle est la sortie de print(3 * 'ab') ?",
+      "options": ["ababab", "3ab", "ab3", "error"],
+      "correctIndex": 0,
+      "hint": "En Python, on peut multiplier des chaînes."
+    },
+    {
+      "id": 9,
+      "level": "moyen",
+      "question": "Quel mot-clé permet de gérer les exceptions en Python ?",
+      "options": ["try", "catch", "error", "exception"],
+      "correctIndex": 0,
+      "hint": "On l’utilise avec except."
+    },
+    {
+      "id": 10,
+      "level": "moyen",
+      "question": "Comment importez-vous une bibliothèque en Python ?",
+      "options": ["import math", "include math", "load_library math", "use math"],
+      "correctIndex": 0,
+      "hint": "Utilisé en début de fichier."
+    },
+
+    {
+      "id": 11,
+      "level": "difficile",
+      "question": "Quel est le paradigme principal de Python ?",
+      "options": [
+        "Multi-paradigme (impératif, objet, fonctionnel)",
+        "Programmation purement logique",
+        "Programmation à base de règles",
+        "Programmation strictement fonctionnelle"
+      ],
+      "correctIndex": 0,
+      "hint": "Il s'adapte à plusieurs styles de programmation."
+    },
+    {
+      "id": 12,
+      "level": "difficile",
+      "question": "Quelle est la différence entre une liste et un tuple en Python ?",
+      "options": [
+        "Le tuple est immuable, la liste est mutable",
+        "Le tuple ne peut contenir que des nombres",
+        "La liste ne peut contenir que des chaînes",
+        "Il n’y a aucune différence"
+      ],
+      "correctIndex": 0,
+      "hint": "Une fois créé, un tuple ne change pas."
+    },
+    {
+      "id": 13,
+      "level": "difficile",
+      "question": "Quel est le décorateur utilisé pour créer une méthode statique dans une classe ?",
+      "options": ["@staticmethod", "@class", "@static", "@method"],
+      "correctIndex": 0,
+      "hint": "Il commence par “static”."
+    },
+    {
+      "id": 14,
+      "level": "difficile",
+      "question": "Quelle structure de données est idéale pour garantir l’unicité des éléments ?",
+      "options": ["set", "list", "tuple", "dict"],
+      "correctIndex": 0,
+      "hint": "Elle s’apparente à un ensemble mathématique."
+    },
+    {
+      "id": 15,
+      "level": "difficile",
+      "question": "Quelle version de Python a introduit les f-strings ?",
+      "options": ["Python 3.6", "Python 2.7", "Python 3.2", "Python 3.10"],
+      "correctIndex": 0,
+      "hint": "Sortie en 2016."
+    }
+  ],
+  "bonusQuestions": [
+    {
+      "id": 101,
+      "level": "bonus",
+      "question": "Quel mot-clé permet de créer un générateur en Python ?",
+      "options": ["yield", "generate", "yield return", "gen"],
+      "correctIndex": 0,
+      "hint": "Il produit une suite de valeurs paresseusement."
+    },
+    {
+      "id": 102,
+      "level": "bonus",
+      "question": "Quelle structure permet le contexte sécurisé (ex: gestion auto fermeture fichier) ?",
+      "options": ["with", "context", "using", "manage"],
+      "correctIndex": 0,
+      "hint": "Utilisée avec open(...)."
+    },
+    {
+      "id": 103,
+      "level": "bonus",
+      "question": "Quelle compréhension crée un set à partir d’une liste ?",
+      "options": ["{x for x in liste}", "[x for x in liste]", "(x for x in liste)", "<x for x in liste>"],
+      "correctIndex": 0,
+      "hint": "Crochets = list, accolades = set." 
+    },
+    {
+      "id": 104,
+      "level": "bonus",
+      "question": "Quel module standard sert à sérialiser des objets Python en JSON ?",
+      "options": ["json", "serialize", "pickle", "marshal"],
+      "correctIndex": 0,
+      "hint": "Il propose dumps() et loads()."
+    }
+  ]
+}
