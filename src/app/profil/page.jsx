@@ -9,7 +9,7 @@ import DeconnexionButton from "../components/DeconnexionButton";
 export default function ProfilPage() {
   const [avatars, setAvatars] = useState([]);
   const [profilPseudo, setProfilPseudo] = useState("Joueur");
-  const [profilImage, setProfilImage] = useState("/asset/humain_male.png");
+  const [profilImage, setProfilImage] = useState("");
   const [profilEmail, setProfilEmail] = useState("");
   const [showEditModal, setShowEditModal] = useState(false);
   const [editPseudo, setEditPseudo] = useState("");
