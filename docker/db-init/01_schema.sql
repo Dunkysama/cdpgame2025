@@ -24,7 +24,7 @@ CREATE TABLE Personnages(
    race VARCHAR(16)  NOT NULL,
    sexe VARCHAR(16)  NOT NULL,
    temps_de_jeu INTEGER,
-   date_suppression TIMESTAMP,
+   date_suppression TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
    id_utilisateur INTEGER NOT NULL,
    PRIMARY KEY(id_personnage),
    FOREIGN KEY(id_utilisateur) REFERENCES Utilisateurs(id_utilisateur)
@@ -33,7 +33,7 @@ CREATE TABLE Personnages(
 CREATE TABLE Themes(
    id_theme SERIAL,
    nom_theme VARCHAR(64)  NOT NULL,
-   PRIMARY KEY(id_theme),
+   PRIMARY KEY(id_theme)
 );
 
 CREATE TABLE Questions(
