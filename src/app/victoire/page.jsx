@@ -2,9 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { isBadgeUnlocked, BADGES } from "@/app/utils/badges";
 
 export default function VictoryPage() {
   const [confettis, setConfettis] = useState([]);
+  const [showSansFaute, setShowSansFaute] = useState(false);
+  const [animateIn, setAnimateIn] = useState(false);
+  const [showRapide, setShowRapide] = useState(false);
+  const [animateRapideIn, setAnimateRapideIn] = useState(false);
 
   useEffect(() => {
     // Fin de run du Boss: autoriser une nouvelle tentative ultérieure
@@ -34,7 +39,62 @@ export default function VictoryPage() {
     }
 
     setConfettis(newConfettis);
+
+    // Lire l’indicateur de victoire parfaite (sans perte de vie) et l'état du badge Rapide
+    try {
+      if (typeof window !== "undefined") {
+        // 1) Via query param pour fiabilité
+        const params = new URLSearchParams(window.location.search);
+        const qp = params.get('sansfaute');
+        let sansFauteOn = false;
+        if (qp === '1') {
+          sansFauteOn = true;
+        } else if (qp === '0') {
+          sansFauteOn = false;
+        } else {
+          // 2) Fallback via localStorage
+          const flag = localStorage.getItem('lastWinSansFaute');
+          sansFauteOn = flag === 'true';
+          localStorage.removeItem('lastWinSansFaute');
+        }
+
+        setShowSansFaute(sansFauteOn);
+        setAnimateIn(sansFauteOn);
+
+        // Afficher le badge Rapide si débloqué et si Sans-faute n'est pas affiché
+        const rapideUnlocked = isBadgeUnlocked(BADGES.RAPIDE.id);
+        const showRapideNow = !sansFauteOn && !!rapideUnlocked;
+        setShowRapide(showRapideNow);
+        setAnimateRapideIn(showRapideNow);
+      }
+    } catch {}
   }, []);
+
+  // Masquer le badge après 8 secondes
+  useEffect(() => {
+    if (showSansFaute) {
+      const id = setTimeout(() => setShowSansFaute(false), 8000);
+      return () => clearTimeout(id);
+    }
+  }, [showSansFaute]);
+
+  // Synchroniser l'animation avec l'affichage du badge
+  useEffect(() => {
+    if (showSansFaute) {
+      setAnimateIn(true);
+    } else {
+      setAnimateIn(false);
+    }
+  }, [showSansFaute]);
+
+  // Synchroniser l'animation du badge Rapide
+  useEffect(() => {
+    if (showRapide) {
+      setAnimateRapideIn(true);
+    } else {
+      setAnimateRapideIn(false);
+    }
+  }, [showRapide]);
 
   const getShapeClass = (shape) => {
     switch (shape) {
@@ -77,6 +137,52 @@ export default function VictoryPage() {
             RETOUR À LA CARTE
           </Link>
         </div>
+
+        {/* Badge Sans-faute sous le bouton Retour à la carte */}
+        {showSansFaute && (
+          <div className="fixed top-0 right-0 z-50">
+            <div
+              className={`bg-zinc-800 border-2 border-zinc-600 rounded-none px-2 py-2 shadow-md flex items-center gap-2 transform transition-all duration-700 ${animateIn ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}
+            >
+              <img
+                src="/asset/Sans-faute.png"
+                alt="Sans faute"
+                className="w-14 h-14 md:w-16 md:h-16 border-2 border-white rounded-full bg-zinc-900 shadow"
+              />
+              <div className="flex flex-col">
+                <p className="text-xs md:text-sm font-pixel text-white leading-tight">
+                  Succès: Sans faute !
+                </p>
+                <p className="text-[10px] md:text-xs font-pixel text-white/80 leading-tight">
+                  Victoire parfaite: vaincre le Boss global sans perdre de vie.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Badge Rapide au même emplacement */}
+        {showRapide && (
+          <div className="fixed top-0 right-0 z-50">
+            <div
+              className={`bg-zinc-800 border-2 border-zinc-600 rounded-none px-2 py-2 shadow-md flex items-center gap-2 transform transition-all duration-700 ${animateRapideIn ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}
+            >
+              <img
+                src="/asset/Rapide.png"
+                alt="Rapide"
+                className="w-14 h-14 md:w-16 md:h-16 border-2 border-white rounded-full bg-zinc-900 shadow"
+              />
+              <div className="flex flex-col">
+                <p className="text-xs md:text-sm font-pixel text-white leading-tight">
+                  Succès: Rapide !
+                </p>
+                <p className="text-[10px] md:text-xs font-pixel text-white/80 leading-tight">
+                  Global: répondre à chaque question en moins de 5 secondes.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

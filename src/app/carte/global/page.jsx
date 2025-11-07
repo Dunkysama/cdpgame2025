@@ -14,6 +14,7 @@ import MarchandPage from "@/app/marchand/page.jsx";
 import globalQuestionsData from "@/data/global-questions.json";
 import mageMessagesData from "@/data/mage-messages.json";
 import Image from "next/image";
+import { unlockBadge, BADGES } from "@/app/utils/badges";
 
 
 // Configuration du quiz
@@ -150,6 +151,9 @@ export default function GlobalQuizPage(props) {
   const [lives, setLives] = useState(3);
   const [maxLives, setMaxLives] = useState(3);
   const [sablierCount, setSablierCount] = useState(0);
+  // Overlay badge Rapide en haut à droite
+  const [showRapideBanner, setShowRapideBanner] = useState(false);
+  const [animateRapideIn, setAnimateRapideIn] = useState(false);
 
   // Redirection Game Over quand il n'y a plus de vies
   useEffect(() => {
@@ -169,6 +173,9 @@ export default function GlobalQuizPage(props) {
   const [hasVisitedMerchant, setHasVisitedMerchant] = useState(false);
   const [usedQuestionIds, setUsedQuestionIds] = useState(new Set(initialQuestion ? [initialQuestion.id] : []));
   const usedQuestionIdsRef = useRef(new Set(initialQuestion ? [initialQuestion.id] : []));
+  // Chronométrage des réponses pour le badge "Rapide"
+  const questionStartTimeRef = useRef(Date.now());
+  const responseTimesRef = useRef([]);
   
   const [mageMessage, setMageMessage] = useState(mageMessagesData.welcome[0]);
   const [showMageMessage, setShowMageMessage] = useState(true);
@@ -179,6 +186,12 @@ export default function GlobalQuizPage(props) {
   useEffect(() => {
     usedQuestionIdsRef.current = usedQuestionIds;
   }, [usedQuestionIds]);
+
+  // Démarrer le chrono au montage et réinitialiser l’historique des temps
+  useEffect(() => {
+    responseTimesRef.current = [];
+    questionStartTimeRef.current = Date.now();
+  }, []);
   
   // Changer le message du mage au début d'une nouvelle question (mais pas welcome après la première réponse)
   useEffect(() => {
@@ -189,6 +202,8 @@ export default function GlobalQuizPage(props) {
         setMageMessage(welcomeMsg);
         setShowMageMessage(true);
       }
+      // Démarrer/relancer le chronomètre pour la nouvelle question
+      questionStartTimeRef.current = Date.now();
       // Après la première réponse, on ne change plus le message ici (il sera changé par handleAnswer)
     }
   }, [currentQuestion?.id, answered, score, getRandomMageMessage]);
@@ -343,6 +358,18 @@ export default function GlobalQuizPage(props) {
   // À 8 bonnes réponses, rediriger vers la page Boss Final
   useEffect(() => {
     if (score >= QUIZ_CONFIG.MAX_SCORE) {
+      // Débloquer et afficher le badge RAPIDE si toutes les réponses de la run sont < 5s
+      try {
+        const allUnder5s = responseTimesRef.current.length > 0 && responseTimesRef.current.every((ms) => ms <= 5000);
+        if (allUnder5s) {
+          unlockBadge(BADGES.RAPIDE.id);
+          setShowRapideBanner(true);
+          setAnimateRapideIn(true);
+          // Attendre un bref instant pour laisser voir le badge avant redirection
+          setTimeout(() => router.push("/boss-final"), 1500);
+          return;
+        }
+      } catch {}
       router.push("/boss-final");
     }
   }, [score, router]);
@@ -353,6 +380,10 @@ export default function GlobalQuizPage(props) {
     if (isQuizFinished) return; // Ne pas répondre si le quiz est terminé
     if (!currentQuestion) return; // Ne pas répondre si pas de question
     
+    // Enregistrer le temps écoulé pour cette question
+    const elapsedMs = Date.now() - questionStartTimeRef.current;
+    responseTimesRef.current.push(elapsedMs);
+
     setSelectedIndex(index);
     const isCorrect = index === currentQuestion.correctIndex;
     setAnswered(true);
@@ -559,6 +590,26 @@ export default function GlobalQuizPage(props) {
 
   return (
     <>
+      {/* Badge Rapide en haut à droite quand la condition est réussie sur la page Global */}
+      {showRapideBanner && (
+        <div className="fixed top-0 right-0 z-50">
+          <div className={`bg-zinc-800 border-2 border-zinc-600 rounded-none px-2 py-2 shadow-md flex items-center gap-2 transform transition-all duration-700 ${animateRapideIn ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
+            <img
+              src="/asset/Rapide.png"
+              alt="Rapide"
+              className="w-14 h-14 md:w-16 md:h-16 border-2 border-white rounded-full bg-zinc-900 shadow"
+            />
+            <div className="flex flex-col">
+              <p className="text-xs md:text-sm font-pixel text-white leading-tight">
+                Succès: Rapide !
+              </p>
+              <p className="text-[10px] md:text-xs font-pixel text-white/80 leading-tight">
+                Global: chaque réponse en moins de 5 secondes.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       <QuizLayout
         title="THÈME 6 – QUIZ GLOBAL (Culture Tech)"
         level={currentQuestion?.level}

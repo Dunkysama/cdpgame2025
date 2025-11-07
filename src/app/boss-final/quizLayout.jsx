@@ -50,6 +50,9 @@ export default function BossQuizLayout({
   showChangeButton = true,
   showScore = true,
   showTimer = true,
+  // Affichage conditionnel du badge "Sans faute"
+  showSansFauteBadge = false,
+  sansFauteSrc,
 }) {
   return (
     <main className="w-screen h-screen bg-black text-white">
@@ -157,6 +160,13 @@ export default function BossQuizLayout({
           {/* Vies & pièces */}
           {typeof lives === "number" && heartFullSrc && heartEmptySrc && (
             <div className="absolute top-2 left-2 flex flex-col items-start gap-2 pointer-events-none">
+              {showSansFauteBadge && (
+                <img
+                  src={sansFauteSrc || "/asset/Sans-faute.png"}
+                  alt="Sans faute"
+                  className="w-12 h-12 border-2 border-white rounded-full bg-zinc-900"
+                />
+              )}
               <div className="flex items-center gap-1">
                 {Array.from({ length: Math.max(3, maxLives) }, (_, i) => i).map((i) => (
                   <img key={i} src={i < lives ? heartFullSrc : heartEmptySrc} alt={i < lives ? "vie" : "vie perdue"} className="w-10 h-10" />
