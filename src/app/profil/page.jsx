@@ -476,47 +476,28 @@ export default function ProfilPage() {
             <div className="flex ml-20 mt-8 gap-20 flex-wrap">
               {avatars.length > 0 ? (
                 avatars.slice(0, 3).map((avatar, index) => (
-                  <div
-                    key={index}
-                    className="w-24 h-24 rounded-full border-2 border-zinc-600 bg-zinc-800 flex flex-col items-center justify-center relative overflow-hidden"
-                  >
-                    <div className="absolute inset-0">
-                      <Image
-                        src={getAvatarImagePath(avatar)}
-                        alt={`Avatar ${avatar.race} ${avatar.sexe}`}
-                        fill
-                        className="object-contain"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                        }}
-                      />
+                  <div key={index} className="flex flex-col items-center gap-2">
+                    <div
+                      className="w-24 h-24 rounded-full border-2 border-zinc-600 bg-zinc-800 flex flex-col items-center justify-center relative overflow-hidden"
+                    >
+                      <div className="absolute inset-0">
+                        <Image
+                          src={getAvatarImagePath(avatar)}
+                          alt={`Avatar ${avatar.race} ${avatar.sexe}`}
+                          fill
+                          className="object-contain"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div className="relative z-20 bg-zinc-900/80 rounded-lg px-2 py-1 text-center">
-                      <p className="text-[8px] font-pixel text-white">
-                        Badge
-                      </p>
-                      <p className="text-[8px] font-pixel text-white">
-                        {avatar.niveau || 1}xp
-                      </p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                // Afficher des placeholders si aucun avatar
-                Array.from({ length: 3 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="w-24 h-24 rounded-full border-2 border-zinc-600 bg-zinc-800 flex flex-col items-center justify-center"
-                  >
-                    <p className="text-[8px] font-pixel text-white/70 text-center px-2">
-                      Badge
-                    </p>
-                    <p className="text-[8px] font-pixel text-white/70 text-center px-2">
-                      70xp
+                    <p className="text-[10px] font-pixel text-white text-center max-w-24 truncate">
+                      {avatar.pseudo || "Sans nom"}
                     </p>
                   </div>
                 ))
-              )}
+              ) : null}
             </div>
           </div>
         </div>

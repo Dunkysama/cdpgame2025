@@ -13,6 +13,7 @@ export default function HomePage() {
   const [imageErrors, setImageErrors] = useState({});
   const [source, setSource] = useState("local"); // 'local' | 'server'
   const [loading, setLoading] = useState(true);
+  const [quizCompletes, setQuizCompletes] = useState({}); // { avatarId: { css: true, js: false, ... } }
   const router = useRouter();
 
   // Charger les avatars: préférer la BD si l'utilisateur est connecté, sinon fallback localStorage
@@ -204,6 +205,27 @@ export default function HomePage() {
     return `${mins}min`;
   };
 
+  // Charger les quiz complétés pour un avatar
+  const loadQuizCompletes = async (avatarId) => {
+    if (!avatarId || quizCompletes[avatarId]) return; // Déjà chargé
+    
+    try {
+      const response = await fetch(`/api/quiz-completes?idPersonnage=${avatarId}`, { cache: "no-store" });
+      if (response.ok) {
+        const data = await response.json();
+        setQuizCompletes(prev => ({
+          ...prev,
+          [avatarId]: data.completedQuizzes || {}
+        }));
+      }
+    } catch (error) {
+      console.error("Erreur lors du chargement des quiz complétés:", error);
+    }
+  };
+
+  // Les 6 quiz possibles
+  const quizList = ['css', 'js', 'php', 'java', 'python', 'global'];
+
   return (
     <div className="flex min-h-screen items-center justify-center font-sans relative">
       <div className="w-full max-w-2xl px-6 relative z-10">
@@ -275,7 +297,10 @@ export default function HomePage() {
                   <p className="text-xs font-pixel text-white mt-2 text-center max-w-32 truncate">
                     {avatar.pseudo || "Sans nom"}
                   </p>
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-zinc-900 border-2 border-white rounded-lg p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+                  <div 
+                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-zinc-900 border-2 border-white rounded-lg p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none"
+                    onMouseEnter={() => avatar.id && loadQuizCompletes(avatar.id)}
+                  >
                     <div className="space-y-2">
                       <div className="border-b border-zinc-700 pb-2">
                         <p className="text-xs font-pixel text-white font-bold">
@@ -289,12 +314,26 @@ export default function HomePage() {
                         <p className="text-[10px] font-pixel text-white/80">
                           <span className="text-white/60">Sexe:</span> {(avatar.sexe || "N/A").toString().toUpperCase()}
                         </p>
-                        <p className="text-[10px] font-pixel text-white/80">
-                          <span className="text-white/60">Niveau:</span> {avatar.niveau || 1}
-                        </p>
-                        <p className="text-[10px] font-pixel text-white/80">
-                          <span className="text-white/60">Temps de jeu:</span> {formatTempsDeJeu(avatar.tempsDeJeu || 0)}
-                        </p>
+                        <div className="pt-2 border-t border-zinc-700 mt-2">
+                          <p className="text-[10px] font-pixel text-white/60 mb-1">Quiz complétés:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {quizList.map((quiz) => {
+                              const isCompleted = avatar.id ? (quizCompletes[avatar.id]?.[quiz] === true) : false;
+                              return (
+                                <span
+                                  key={quiz}
+                                  className={`text-[9px] font-pixel px-1.5 py-0.5 rounded ${
+                                    isCompleted
+                                      ? "bg-green-600 text-white"
+                                      : "bg-zinc-800 text-white/50"
+                                  }`}
+                                >
+                                  {quiz.toUpperCase()}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
