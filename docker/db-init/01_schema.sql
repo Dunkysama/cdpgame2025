@@ -24,7 +24,7 @@ CREATE TABLE Personnages(
    race VARCHAR(16)  NOT NULL,
    sexe VARCHAR(16)  NOT NULL,
    temps_de_jeu INTEGER,
-   date_suppression TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+   date_suppression TIMESTAMP,
    id_utilisateur INTEGER NOT NULL,
    PRIMARY KEY(id_personnage),
    FOREIGN KEY(id_utilisateur) REFERENCES Utilisateurs(id_utilisateur)
