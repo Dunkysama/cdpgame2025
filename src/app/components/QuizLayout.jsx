@@ -49,11 +49,11 @@ export default function QuizLayout({
   disableSablier,
 }) {
   return (
-    <main className="w-screen h-screen bg-black text-white">
+    <main className="w-screen h-screen bg-zinc-800 text-white">
       {/* Grand cadre écran noir/blanc pleine page */}
-      <div className="relative w-full h-full bg-white text-black border-4 border-black rounded-3xl shadow-md overflow-hidden flex flex-col">
+      <div className="relative w-full h-full bg-zinc-800 text-white border-4 border-white rounded-3xl shadow-md overflow-hidden flex flex-col">
         {/* Zone visuelle – occupe ~2/3 supérieurs (image en dehors de la zone question) */}
-        <div className="flex-[2] w-full bg-white relative">
+        <div className="flex-[2] relative">
           {visualImageSrc && (
             <Image
               src={visualImageSrc}
@@ -169,7 +169,7 @@ export default function QuizLayout({
                 <div className="flex items-center gap-1">
                   <img src={coinSrc} alt="coin" className="w-10 h-10" />
                   {typeof coinCount === "number" && (
-                    <span className="font-pixel text-xs text-black">{coinCount}</span>
+                    <span className="font-pixel text-xs text-white">{coinCount}</span>
                   )}
                 </div>
               )}
@@ -177,7 +177,7 @@ export default function QuizLayout({
                 <div className="flex items-center gap-1">
                   <img src={tokenSrc} alt="token" className="w-10 h-10" />
                   {tokens > 1 && (
-                    <span className="font-pixel text-xs text-black">{tokens}</span>
+                    <span className="font-pixel text-xs text-white">{tokens}</span>
                   )}
                 </div>
               )}
@@ -194,29 +194,29 @@ export default function QuizLayout({
         <div className="relative px-4 pb-6 flex-[1]">
           <div className="flex items-center gap-3">
             {/* Trait gauche */}
-            <div className="hidden md:block h-[2px] bg-black flex-1" />
+            <div className="hidden md:block h-[2px] bg-white flex-1" />
 
             {/* Encadré centré */}
-            <div className="border-2 border-black rounded-2xl px-6 py-3 bg-white text-center max-w-250 w-full mx-auto">
-              <div className="font-pixel text-base md:text-xl">Question</div>
-              <div className="mt-2 font-pixel text-xs md:text-sm">{question}</div>
+            <div className="border-2 border-white rounded-2xl px-6 py-3 bg-zinc-800 text-center max-w-250 w-full mx-auto">
+              <div className="font-pixel text-base md:text-xl text-white">Question</div>
+              <div className="mt-2 font-pixel text-xs md:text-sm text-white">{question}</div>
             </div>
 
           {/* Trait droit */}
-          <div className="hidden md:block h-[2px] bg-black flex-1" />
+          <div className="hidden md:block h-[2px] bg-white flex-1" />
           </div>
           {/* Boutons verticaux juste en dessous de la ligne, à droite */}
           <div className="mt-1 flex justify-end">
             <div className="flex flex-col gap-2">
               <button
                 onClick={() => (onRevealHint ? onRevealHint() : onToggleHint?.())}
-                className="w-9 h-9 border-2 border-black rounded-xl bg-white hover:bg-gray-100 font-pixel"
+                className="w-9 h-9 border-2 border-white rounded-xl bg-zinc-800 hover:bg-zinc-600 font-pixel text-white"
                 aria-label="Indice"
               >
                 ?
               </button>
               <button
-                className="w-9 h-9 border-2 border-black rounded-xl bg-white hover:bg-gray-100 font-pixel"
+                className="w-9 h-9 border-2 border-white rounded-xl bg-zinc-800 hover:bg-zinc-600 font-pixel"
                 aria-label="Changer"
                 onClick={() => onChangeQuestion?.()}
               >
@@ -224,13 +224,13 @@ export default function QuizLayout({
               </button>
               {typeof sablierCount === "number" && onUseSablier && (
                 <button
-                  className="relative w-9 h-9 border-2 border-black rounded-xl bg-white hover:bg-gray-100 font-pixel disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative w-9 h-9 border-2 border-white rounded-xl bg-zinc-800 hover:bg-zinc-600 font-pixel disabled:opacity-50 disabled:cursor-not-allowed text-white"
                   aria-label="Sablier"
                   onClick={() => onUseSablier?.()}
                   disabled={sablierCount <= 0 || disableSablier}
                 >
                   ⏳
-                  <span className="absolute -top-2 -right-2 px-1 rounded bg-black text-white text-[10px] font-pixel">
+                  <span className="absolute -top-2 -right-2 px-1 rounded bg-zinc-800 text-white text-[10px] font-pixel">
                     {typeof sablierCount === "number" ? sablierCount : 0}
                   </span>
                 </button>
@@ -249,12 +249,12 @@ export default function QuizLayout({
               const interactivity = answered ? "pointer-events-none" : "cursor-pointer";
 
               // Couleurs selon les règles demandées
-              let classes = `${base} bg-white border-black hover:bg-gray-100 ${interactivity}`;
+              let classes = `${base} bg-zinc-800 border-white hover:bg-zinc-600 text-white ${interactivity}`;
               if (showWrong) {
                 classes = `${base} bg-red-600 border-red-600 text-white ${interactivity}`;
               } else if (showCorrect) {
                 // Si c'est la bonne réponse: vert si cliquée, sinon bordure verte + léger halo
-                classes = `${base} ${isSelected ? "bg-green-600 text-white" : "bg-white"} border-green-600 ${interactivity} ${isSelected ? "" : "ring-2 ring-green-400"}`;
+                classes = `${base} ${isSelected ? "bg-green-600 text-white" : "bg-zinc-800 text-white"} border-green-600 ${interactivity} ${isSelected ? "" : "ring-2 ring-green-400"}`;
               }
 
               return (
@@ -271,7 +271,7 @@ export default function QuizLayout({
 
           {/* Indice affiché quand actif */}
           {showHint && (
-            <div className="mt-3 font-pixel text-[10px] md:text-xs text-center">Indice : {hint}</div>
+            <div className="mt-3 font-pixel text-[10px] md:text-xs text-center text-white">Indice : {hint}</div>
           )}
 
           {/* Score final, sans bouton retour ni bouton suivant */}
@@ -279,22 +279,22 @@ export default function QuizLayout({
           
           <div className="mt-4 flex items-center justify-end">
             {hasNext ? (
-              <div className="font-pixel text-[10px] md:text-xs text-black/60">&nbsp;</div>
+              <div className="font-pixel text-[10px] md:text-xs text-white/60">&nbsp;</div>
             ) : (
-              <div className="font-pixel text-xs">Score {score} / {total}</div>
+              <div className="font-pixel text-xs text-white">Score {score} / {total}</div>
             )}
           </div>
         </div>
 
         {/* Chronomètre en bas à droite + barre de progression du temps */}
         <div className="absolute bottom-3 right-4 flex items-center gap-3">
-          <div className="w-32 h-2 border-2 border-black rounded-full bg-white overflow-hidden">
+          <div className="w-32 h-2 border-2 border-white rounded-full bg-zinc-800 overflow-hidden">
             <div
-              className="h-full bg-black transition-all duration-300 rounded-full"
+              className="h-full bg-white transition-all duration-300 rounded-full"
               style={{ width: `${Math.max(0, Math.min(100, (timerTotalSeconds ? (timerSeconds / timerTotalSeconds) : 0) * 100))}%` }}
             />
           </div>
-          <div className="font-pixel text-[10px] md:text-xs">{timerSeconds} sec</div>
+          <div className="font-pixel text-[10px] md:text-xs text-white">{timerSeconds} sec</div>
         </div>
       </div>
     </main>
