@@ -43,6 +43,22 @@ export default function RegisterPage() {
     }
 
     alert("✅ Compte créé !");
+    // Initialiser les clés de badges et stats pour le nouvel utilisateur
+    try {
+      localStorage.setItem("unlockedBadges", JSON.stringify([]));
+      localStorage.removeItem("selectedBadge");
+      localStorage.setItem(
+        "gameStats",
+        JSON.stringify({
+          consecutiveWins: 0,
+          totalGames: 0,
+          perfectGames: 0,
+          averageResponseTime: 0,
+          responseTimes: [],
+        })
+      );
+      localStorage.setItem("completedQuizzes", JSON.stringify({}));
+    } catch {}
     setEmail(""); setUsername(""); setPassword(""); setConfirmPassword("");
     // Redirection automatique vers la page de connexion après création
     router.push("/connexion");

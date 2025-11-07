@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import carteImage from "@/asset/carte.jpg";
 import Link from "next/link";
+import { unlockBadge, BADGES } from "@/app/utils/badges";
 
 export default function PageCarte() {
   const [completedQuizzes, setCompletedQuizzes] = useState({});
@@ -68,6 +69,16 @@ export default function PageCarte() {
 
     loadCompletedQuizzes();
   }, []);
+
+  // Débloquer le badge "5 victoires" dès que 5 mondes différents sont complétés
+  useEffect(() => {
+    try {
+      const count = Object.values(completedQuizzes).filter(Boolean).length;
+      if (count >= 5) {
+        unlockBadge(BADGES.VICTOIRE_5.id);
+      }
+    } catch {}
+  }, [completedQuizzes]);
 
   // Fonction pour obtenir les classes CSS selon l'état de complétion
   const getQuizButtonClasses = (quizId) => {

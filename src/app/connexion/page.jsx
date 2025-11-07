@@ -36,6 +36,29 @@ const handleSubmit = async (e) => {
     }
 
     if (typeof payload === "object" && payload?.ok === true) {
+      // S'assurer que les clés de badges existent après connexion
+      try {
+        const unlocked = localStorage.getItem("unlockedBadges");
+        if (!unlocked) localStorage.setItem("unlockedBadges", JSON.stringify([]));
+
+        const stats = localStorage.getItem("gameStats");
+        if (!stats) {
+          localStorage.setItem(
+            "gameStats",
+            JSON.stringify({
+              consecutiveWins: 0,
+              totalGames: 0,
+              perfectGames: 0,
+              averageResponseTime: 0,
+              responseTimes: [],
+            })
+          );
+        }
+
+        const cq = localStorage.getItem("completedQuizzes");
+        if (!cq) localStorage.setItem("completedQuizzes", JSON.stringify({}));
+      } catch {}
+
       router.push("/");
     } else {
       throw new Error(payload?.error || "Nom d'utilisateur ou mot de passe incorrect");

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { unlockBadge, BADGES } from "@/app/utils/badges";
 import BossQuizLayout from "./quizLayout";
 import wall from "@/asset/wall.jpg";
 // Le sprite du personnage sera chargé dynamiquement depuis localStorage
@@ -198,6 +199,7 @@ export default function BossFinalPage() {
   const usedQuestionIds = useRef(new Set(initialQuestion ? [initialQuestion.id] : []));
   const lowTimerMessageShownRef = useRef(false);
   const hasAnsweredFirstQuestionRef = useRef(false);
+  const lostLifeRef = useRef(false);
 
   // Messages aléatoires du mage
   const getRandomMageMessage = useCallback((category) => {
@@ -306,6 +308,7 @@ export default function BossFinalPage() {
     } else {
       setMageMessage(getRandomMageMessage("incorrect"));
       setShowMageMessage(true);
+      lostLifeRef.current = true;
       setLives((l) => Math.max(0, l - 1));
 
       setTimeout(() => {
@@ -373,6 +376,20 @@ export default function BossFinalPage() {
                 if (!response.ok) {
                   console.error("Erreur lors de la sauvegarde du quiz complété");
                 }
+
+                // Mettre à jour le fallback localStorage pour la carte
+                try {
+                  const saved = localStorage.getItem("completedQuizzes");
+                  const map = saved ? JSON.parse(saved) : {};
+                  map.global = true;
+                  localStorage.setItem("completedQuizzes", JSON.stringify(map));
+
+                  // Débloquer immédiatement le badge 5 victoires si seuil atteint
+                  const count = Object.values(map).filter(Boolean).length;
+                  if (count >= 5) {
+                    try { unlockBadge(BADGES.VICTOIRE_5.id); } catch {}
+                  }
+                } catch {}
               }
             }
           }
@@ -382,7 +399,23 @@ export default function BossFinalPage() {
       };
 
       saveQuizCompletion();
-      router.push("/victoire");
+
+      // Indicateur de victoire sans perte de vie pour la page Victoire
+      try {
+        if (typeof window !== "undefined") {
+          const isPerfect = !lostLifeRef.current;
+          localStorage.setItem("lastWinSansFaute", isPerfect ? "true" : "false");
+        }
+      } catch {}
+      const isPerfect = !lostLifeRef.current;
+
+      // Débloquer le badge "Sans faute" pour le profil si victoire parfaite
+      try {
+        if (isPerfect) {
+          unlockBadge(BADGES.SANS_FAUTE.id);
+        }
+      } catch {}
+      router.push(`/victoire?sansfaute=${isPerfect ? "1" : "0"}`);
     }
   }, [bossHeartsCount, router]);
 
@@ -471,6 +504,8 @@ export default function BossFinalPage() {
         showChangeButton={false}
         showScore={false}
         showTimer={false}
+        showSansFauteBadge={score >= BOSS_CONFIG.MAX_SCORE && !lostLifeRef.current}
+        sansFauteSrc="/asset/Sans-faute.png"
       />
 
     </>
