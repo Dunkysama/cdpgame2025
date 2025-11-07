@@ -9,7 +9,7 @@ import DeconnexionButton from "../components/DeconnexionButton";
 export default function ProfilPage() {
   const [avatars, setAvatars] = useState([]);
   const [profilPseudo, setProfilPseudo] = useState("Joueur");
-  const [profilImage, setProfilImage] = useState("/asset/humain_male.png");
+  const [profilImage, setProfilImage] = useState("");
   const [profilEmail, setProfilEmail] = useState("");
   const [showEditModal, setShowEditModal] = useState(false);
   const [editPseudo, setEditPseudo] = useState("");
@@ -223,28 +223,77 @@ export default function ProfilPage() {
     setShowEditModal(true);
   };
 
-  const handleSaveEdit = () => {
-    if (typeof window !== "undefined") {
-      // Vérifier que les mots de passe correspondent si un nouveau mot de passe est saisi
-      if (editPassword && editPassword !== editConfirmPassword) {
-        alert("Les mots de passe ne correspondent pas");
-        return;
-      }
+ const handleSaveEdit = async () => {
+  if (typeof window === "undefined") return;
 
-      localStorage.setItem("profilPseudo", editPseudo);
-      localStorage.setItem("profilImage", editImage);
-      if (editEmail) {
-        localStorage.setItem("profilEmail", editEmail);
-        setProfilEmail(editEmail);
+  // ✅ Vérifier si les mots de passe correspondent
+  if (editPassword && editPassword !== editConfirmPassword) {
+    alert("Les mots de passe ne correspondent pas");
+    return;
+  }
+
+  try {
+    // 1) Mise à jour du mot de passe en BDD si saisi
+    if (editPassword) {
+      const pwRes = await fetch("/api/profil/password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ newPassword: editPassword }),
+      });
+      const pwData = await pwRes.json().catch(() => ({}));
+      if (!pwRes.ok) {
+        throw new Error(pwData?.error || "Échec de la mise à jour du mot de passe");
       }
-      if (editPassword) {
-        localStorage.setItem("profilPassword", editPassword);
-      }
-      setProfilPseudo(editPseudo);
-      setProfilImage(editImage);
-      setShowEditModal(false);
     }
-  };
+
+    // 2) Mise à jour pseudo/email en BDD si modifiés
+    if (editPseudo?.trim() || editEmail?.trim()) {
+      const prRes = await fetch("/api/profil", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nom_utilisateur: editPseudo?.trim() || undefined,
+          email: editEmail?.trim() || undefined,
+        }),
+      });
+      const prData = await prRes.json().catch(() => ({}));
+      if (!prRes.ok) {
+        throw new Error(prData?.error || "Échec de la mise à jour du profil");
+      }
+      if (prData?.user) {
+        setProfilPseudo(prData.user.username || editPseudo);
+        setProfilEmail(prData.user.email || editEmail);
+      }
+    }
+
+    // 3) Mettre à jour l'affichage + localStorage pour l'image (path via upload déjà géré)
+    if (editPseudo) {
+      setProfilPseudo(editPseudo);
+      localStorage.setItem("profilPseudo", editPseudo);
+    }
+
+    if (editImage) {
+      setProfilImage(editImage);
+      localStorage.setItem("profilImage", editImage);
+    }
+
+    if (editEmail) {
+      setProfilEmail(editEmail);
+      localStorage.setItem("profilEmail", editEmail);
+    }
+
+    // Ne jamais stocker le mot de passe en localStorage
+
+    //  Fermer la fenêtre modale après sauvegarde
+    setShowEditModal(false);
+
+    alert("✅ Profil mis à jour avec succès !" + (editPassword ? "\n(Mot de passe changé)" : ""));
+  } catch (err) {
+    console.error("Erreur :", err);
+    alert( err.message);
+  }
+};
+
 
   const handleCancelEdit = () => {
     setEditPseudo(profilPseudo);

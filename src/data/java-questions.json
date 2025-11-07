@@ -1,0 +1,203 @@
+{
+  "questions": [
+    {
+      "id": 1,
+      "level": "facile",
+      "question": "Java est principalement utilisé pour :",
+      "options": [
+        "Développer des applications multiplateformes",
+        "Créer des sites web statiques",
+        "Gérer uniquement des bases de données",
+        "Éditer des images"
+      ],
+      "correctIndex": 0,
+      "hint": "Il fonctionne sur tous les systèmes grâce à la JVM."
+    },
+    {
+      "id": 2,
+      "level": "facile",
+      "question": "Quelle est l’extension habituelle d’un fichier Java ?",
+      "options": [".java", ".jav", ".class", ".js"],
+      "correctIndex": 0,
+      "hint": "C’est le fichier source avant compilation."
+    },
+    {
+      "id": 3,
+      "level": "facile",
+      "question": "Quel mot-clé est utilisé pour déclarer une classe en Java ?",
+      "options": ["class", "struct", "define", "object"],
+      "correctIndex": 0,
+      "hint": "On parle de programmation orientée objet."
+    },
+    {
+      "id": 4,
+      "level": "facile",
+      "question": "Quel est le symbole utilisé pour terminer une instruction en Java ?",
+      "options": [";", ":", ".", "/"],
+      "correctIndex": 0,
+      "hint": "Il marque la fin de chaque ligne d’exécution."
+    },
+    {
+      "id": 5,
+      "level": "facile",
+      "question": "Quel mot-clé permet d’afficher un texte à l’écran ?",
+      "options": ["System.out.println()", "echo()", "print()", "display()"],
+      "correctIndex": 0,
+      "hint": "Il envoie du texte vers la console."
+    },
+    {
+      "id": 6,
+      "level": "moyen",
+      "question": "Quelle méthode représente le point d’entrée principal d’un programme Java ?",
+      "options": [
+        "public static void main(String[] args)",
+        "startProgram()",
+        "execute()",
+        "runApp()"
+      ],
+      "correctIndex": 0,
+      "hint": "Sans elle, le programme ne démarre pas."
+    },
+    {
+      "id": 7,
+      "level": "moyen",
+      "question": "Quelle est la différence entre une classe et un objet ?",
+      "options": [
+        "Une classe est un modèle, un objet est une instance de ce modèle",
+        "Une classe et un objet sont identiques",
+        "Un objet contient des classes",
+        "Une classe ne peut pas exister sans objet"
+      ],
+      "correctIndex": 0,
+      "hint": "L’objet “naît” de la classe."
+    },
+    {
+      "id": 8,
+      "level": "moyen",
+      "question": "Quelle structure conditionnelle utilise-t-on pour exécuter un code selon une condition ?",
+      "options": ["if / else", "when / otherwise", "choose / case", "verify / then"],
+      "correctIndex": 0,
+      "hint": "C’est la base des conditions."
+    },
+    {
+      "id": 9,
+      "level": "moyen",
+      "question": "Que permet la boucle for en Java ?",
+      "options": [
+        "Répéter un bloc de code un nombre déterminé de fois",
+        "Répéter indéfiniment sans condition",
+        "Définir une méthode",
+        "Créer une classe"
+      ],
+      "correctIndex": 0,
+      "hint": "Elle contient une variable d’incrémentation."
+    },
+    {
+      "id": 10,
+      "level": "moyen",
+      "question": "Quelle est la différence entre == et .equals() ?",
+      "options": [
+        "== compare les références, .equals() compare les valeurs",
+        "Les deux comparent les valeurs",
+        "== compare les types",
+        ".equals() sert uniquement pour les nombres"
+      ],
+      "correctIndex": 0,
+      "hint": "L’un teste l’adresse mémoire, l’autre le contenu."
+    },
+    {
+      "id": 11,
+      "level": "difficile",
+      "question": "Quelle est la signification de JVM ?",
+      "options": [
+        "Java Virtual Machine",
+        "Java Visual Model",
+        "Java Version Manager",
+        "Java Variable Module"
+      ],
+      "correctIndex": 0,
+      "hint": "C’est elle qui exécute le code Java."
+    },
+    {
+      "id": 12,
+      "level": "difficile",
+      "question": "Que permet le mot-clé extends en Java ?",
+      "options": [
+        "Hériter d’une autre classe",
+        "Étendre une variable",
+        "Ajouter une méthode à une interface",
+        "Fusionner deux classes"
+      ],
+      "correctIndex": 0,
+      "hint": "Il s’agit d’héritage en POO."
+    },
+    {
+      "id": 13,
+      "level": "difficile",
+      "question": "Quelle est la différence entre ArrayList et LinkedList ?",
+      "options": [
+        "ArrayList est basée sur un tableau, LinkedList sur une liste chaînée",
+        "Elles sont identiques",
+        "LinkedList est plus rapide dans tous les cas",
+        "ArrayList n’accepte pas les doublons"
+      ],
+      "correctIndex": 0,
+      "hint": "L’une accède vite par index, l’autre insère vite."
+    },
+    {
+      "id": 14,
+      "level": "difficile",
+      "question": "Quelle interface Java est utilisée pour les threads ?",
+      "options": ["Runnable", "Executable", "Threadable", "Process"],
+      "correctIndex": 0,
+      "hint": "Elle contient la méthode run()."
+    },
+    {
+      "id": 15,
+      "level": "difficile",
+      "question": "Que signifie l’annotation @Override ?",
+      "options": [
+        "Indique qu’une méthode redéfinit une méthode héritée",
+        "Déclare une méthode publique",
+        "Supprime une méthode",
+        "Force l’exécution d’une méthode"
+      ],
+      "correctIndex": 0,
+      "hint": "Elle vérifie qu’on réécrit bien une méthode parent."
+    }
+  ],
+  "bonusQuestions": [
+    {
+      "id": 101,
+      "level": "bonus",
+      "question": "Quel mot-clé empêche qu’une classe soit héritée ?",
+      "options": ["final", "static", "abstract", "private"],
+      "correctIndex": 0,
+      "hint": "On l’emploie aussi pour les méthodes et les variables."
+    },
+    {
+      "id": 102,
+      "level": "bonus",
+      "question": "Quelle interface doit implémenter une classe pour être parcourue dans un for-each ?",
+      "options": ["Iterable", "Iterator", "Collection", "Comparable"],
+      "correctIndex": 0,
+      "hint": "Elle expose la méthode iterator()."
+    },
+    {
+      "id": 103,
+      "level": "bonus",
+      "question": "Quelle structure garantit l’unicité des éléments ?",
+      "options": ["Set", "List", "Queue", "Map"],
+      "correctIndex": 0,
+      "hint": "Elle ne permet pas les doublons."
+    },
+    {
+      "id": 104,
+      "level": "bonus",
+      "question": "Dans quel package trouve-t-on les classes d’E/S (fichiers, flux) de base ?",
+      "options": ["java.io", "java.net", "java.util", "java.time"],
+      "correctIndex": 0,
+      "hint": "Input/Output."
+    }
+  ]
+}

@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import QuizLayout from "@/app/components/QuizLayout";
-import globalPlaine from "@/asset/global__plaine.png";
-import plateforme from "@/asset/plateforme.png";
-// Le sprite du personnage sera chargé dynamiquement depuis localStorage
+import globalPlaine from "@/asset/decor/fonds/tour_global.png";
+import plateforme from "@/asset/decor/plateformes/plateforme_global.png";
+import elfFemelle from "@/asset/elf_femelle.png";
 import heart from "@/asset/heart.jpg";
 import heartless from "@/asset/heartless.jpg";
 import coin from "@/asset/coin.jpg";

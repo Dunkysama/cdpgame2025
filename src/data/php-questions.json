@@ -1,0 +1,163 @@
+{
+  "questions": [
+    {
+      "id": 1,
+      "level": "facile",
+      "question": "PHP est principalement utilisé pour :",
+      "options": [
+        "Générer des pages web dynamiques",
+        "Créer des images vectorielles",
+        "Compiler des programmes en C",
+        "Gérer une base de données sans serveur"
+      ],
+      "correctIndex": 0,
+      "hint": "Il est surtout côté serveur et interprété."
+    },
+    {
+      "id": 2,
+      "level": "facile",
+      "question": "Quelle est l’extension habituelle d’un fichier PHP ?",
+      "options": [".php", ".ph", ".htmlphp", ".phtmlx"],
+      "correctIndex": 0,
+      "hint": "Comme le nom du langage."
+    },
+    {
+      "id": 3,
+      "level": "facile",
+      "question": "Dans quel environnement PHP fonctionne-t-il principalement ?",
+      "options": ["Serveur Web", "Application mobile native", "Terminal Linux", "Navigateur sans serveur"],
+      "correctIndex": 0,
+      "hint": "Il est exécuté côté serveur, pas côté client."
+    },
+    {
+      "id": 4,
+      "level": "facile",
+      "question": "Le symbole utilisé pour déclarer une variable en PHP est :",
+      "options": ["$", "#", "@", "%"],
+      "correctIndex": 0,
+      "hint": "Comme en JavaScript."
+    },
+    {
+      "id": 5,
+      "level": "facile",
+      "question": "Quelle balise commence un bloc de code PHP dans un fichier HTML ?",
+      "options": ["<?php", "<php>", "<?>", "</php>"],
+      "correctIndex": 0,
+      "hint": "Ce sont des balises spéciales commençant par <?."
+    },
+    {
+      "id": 6,
+      "level": "moyen",
+      "question": "Quelle fonction permet d’afficher du texte en PHP ?",
+      "options": ["echo", "print_text", "display()", "printf()"],
+      "correctIndex": 0,
+      "hint": "Ce mot peut signifier “répéter”."
+    },
+    {
+      "id": 7,
+      "level": "moyen",
+      "question": "Que signifie PHP ?",
+      "options": ["Hypertext Preprocessor", "Personal Home Page", "Procedural Hyper Program", "Programmatic HTML Parser"],
+      "correctIndex": 0,
+      "hint": "Ce nom est une rétro-acronymie."
+    },
+    {
+      "id": 8,
+      "level": "moyen",
+      "question": "Quel mot-clé est utilisé pour inclure un fichier externe en PHP ?",
+      "options": ["include", "import", "require_once_all", "load_file()"],
+      "correctIndex": 0,
+      "hint": "On l’utilise pour charger un fichier dans un autre."
+    },
+    {
+      "id": 9,
+      "level": "moyen",
+      "question": "Quelle superglobale contient les données envoyées par une requête GET ?",
+      "options": ["$_GET", "$_REQUEST", "$_URL", "$_ACTION"],
+      "correctIndex": 0,
+      "hint": "Le nom de la variable contient la méthode elle-même."
+    },
+    {
+      "id": 10,
+      "level": "moyen",
+      "question": "Quelle est la dernière version majeure de PHP (à titre indicatif début 2025) ?",
+      "options": ["PHP 8.3", "PHP 6.0", "PHP 9.1", "PHP 5.8"],
+      "correctIndex": 0,
+      "hint": "La version 6 n’a jamais existé officiellement."
+    },
+    {
+      "id": 11,
+      "level": "difficile",
+      "question": "Quelle interface permet à PHP de communiquer avec différentes bases de données, comme MySQL ou PostgreSQL ?",
+      "options": ["PDO", "SQLi", "PSQL", "DataConnector"],
+      "correctIndex": 0,
+      "hint": "Ces lettres signifient “PHP Data Objects”."
+    },
+    {
+      "id": 12,
+      "level": "difficile",
+      "question": "Quel type de programmation PHP supporte-t-il depuis PHP 5 ?",
+      "options": ["Programmation orientée objet", "Programmation only script", "Programmation modulaire obligataire", "Programmation isochrone"],
+      "correctIndex": 0,
+      "hint": "On parle de classes et d’objets."
+    },
+    {
+      "id": 13,
+      "level": "difficile",
+      "question": "Quelle est la durée de vie d'une variable de session PHP par défaut ?",
+      "options": ["Jusqu’à fermeture du navigateur", "24h par défaut", "5 minutes", "Jusqu'au prochain refresh"],
+      "correctIndex": 0,
+      "hint": "Elle vit tant que la session est active."
+    },
+    {
+      "id": 14,
+      "level": "difficile",
+      "question": "Quelle fonction permet de hacher une chaîne de caractères de manière sécurisée en PHP ?",
+      "options": ["password_hash()", "md5()", "crypt_secure()", "encode()"],
+      "correctIndex": 0,
+      "hint": "Une fonction spécialement dédiée aux mots de passe."
+    },
+    {
+      "id": 15,
+      "level": "difficile",
+      "question": "Comment définit-on une constante en PHP ?",
+      "options": ["define(\"NOM\", valeur)", "$const NOM = valeur", "constant NOM = valeur", "set(NOM, valeur)"],
+      "correctIndex": 0,
+      "hint": "Ce mot signifie “définir”."
+    }
+  ],
+  "bonusQuestions": [
+    {
+      "id": 101,
+      "level": "bonus",
+      "question": "Quel opérateur concatène deux chaînes en PHP ?",
+      "options": [".", "+", "&", "||"],
+      "correctIndex": 0,
+      "hint": "Ce n’est pas le même que JavaScript."
+    },
+    {
+      "id": 102,
+      "level": "bonus",
+      "question": "Quelle fonction affiche le contenu détaillé (type + valeur) d’une variable ?",
+      "options": ["var_dump()", "print_r_d()", "inspect()", "debug_show()"],
+      "correctIndex": 0,
+      "hint": "Souvent utilisée pour déboguer avec echo."
+    },
+    {
+      "id": 103,
+      "level": "bonus",
+      "question": "Quel fichier indique les dépendances gérées par Composer ?",
+      "options": ["composer.json", "composer.lock", "package.php", "deps.json"],
+      "correctIndex": 0,
+      "hint": "Il contient les contraintes de versions déclarées."
+    },
+    {
+      "id": 104,
+      "level": "bonus",
+      "question": "Quel superglobale contient les informations sur les fichiers uploadés ?",
+      "options": ["$_FILES", "$_UPLOAD", "$_POST_FILES", "$_DATA_FILES"],
+      "correctIndex": 0,
+      "hint": "Elle accompagne souvent un formulaire multipart/form-data."
+    }
+  ]
+}

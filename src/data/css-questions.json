@@ -1,0 +1,211 @@
+{
+  "questions": [
+    {
+        "id": 1,
+        "level": "facile",
+        "question": "Que signifie CSS ?",
+        "options": [
+          "Cascading Style Sheets",
+          "Computer Style System",
+          "Creative Style Script",
+          "Code Sheet Style"
+        ],
+        "correctIndex": 0,
+        "hint": "Cela signifie \"feuilles de style en cascade\"."
+      },
+      {
+        "id": 2,
+        "level": "facile",
+        "question": "Quelle propriété CSS permet de changer la couleur du texte ?",
+        "options": ["color", "text-color", "font-color", "text-style"],
+        "correctIndex": 0,
+        "hint": "C’est la même chose en anglais."
+      },
+      {
+        "id": 3,
+        "level": "facile",
+        "question": "Comment applique-t-on une classe CSS à un élément HTML ?",
+        "options": [
+          "Avec l’attribut class",
+          "Avec l’attribut css",
+          "Avec l’attribut style-class",
+          "Avec l'attribut .class"
+        ],
+        "correctIndex": 0,
+        "hint": "On utilise un attribut qui sert aussi en JavaScript."
+      },
+      {
+        "id": 4,
+        "level": "facile",
+        "question": "Quelle propriété permet de définir la taille du texte ?",
+        "options": ["font-size", "text-size", "font-style", "size-text"],
+        "correctIndex": 0,
+        "hint": "Le mot \"font\" signifie police en anglais."
+      },
+      {
+        "id": 5,
+        "level": "facile",
+        "question": "Quel sélecteur permet de cibler un élément ayant l’ID \"menu\" ?",
+        "options": ["#menu", ".menu", "menu[]", "<menu>"],
+        "correctIndex": 0,
+        "hint": "En CSS, les ID commencent avec un symbole précis."
+      },
+      {
+        "id": 6,
+        "level": "moyen",
+        "question": "Comment centrer du texte dans un élément avec CSS ?",
+        "options": [
+          "text-align: center;",
+          "align-text: middle;",
+          "center-text: all;",
+          "justify-text: center;"
+        ],
+        "correctIndex": 0,
+        "hint": "On utilise souvent cette propriété dans les titres."
+      },
+      {
+        "id": 7,
+        "level": "moyen",
+        "question": "Quelle propriété permet d'ajouter de l'espace à l’intérieur d’un élément ?",
+        "options": ["padding", "margin", "spacing", "inner-space"],
+        "correctIndex": 0,
+        "hint": "C'est l'opposé de margin."
+      },
+      {
+        "id": 8,
+        "level": "moyen",
+        "question": "Quelle unité permet de définir une taille relative à la taille du texte dans CSS ?",
+        "options": ["em", "px", "cm", "%px"],
+        "correctIndex": 0,
+        "hint": "Elle se base sur la taille de la police parente."
+      },
+      {
+        "id": 9,
+        "level": "moyen",
+        "question": "Comment sélectionner tous les éléments <p> dans une page ?",
+        "options": ["p { ... }", ".p { ... }", "#p { ... }", "<p> { ... }"],
+        "correctIndex": 0,
+        "hint": "On écrit simplement le nom de l’élément."
+      },
+      {
+        "id": 10,
+        "level": "moyen",
+        "question": "Quelle propriété permet de changer l’image d’arrière-plan d’un élément ?",
+        "options": [
+          "background-image",
+          "image-background",
+          "bg-img",
+          "background-photo"
+        ],
+        "correctIndex": 0,
+        "hint": "Elle commence par \"background\"."
+      },
+      {
+        "id": 11,
+        "level": "difficile",
+        "question": "Quelle propriété CSS active la flexbox sur un conteneur ?",
+        "options": [
+          "display: flex;",
+          "position: flex;",
+          "flex-active: true;",
+          "display: box;"
+        ],
+        "correctIndex": 0,
+        "hint": "On la met dans la propriété display."
+      },
+      {
+        "id": 12,
+        "level": "difficile",
+        "question": "Quel est l’ordre correct du modèle de boîte CSS ?",
+        "options": [
+          "margin > border > padding > content",
+          "content > padding > border > margin",
+          "padding > border > margin > content",
+          "border > content > padding > margin"
+        ],
+        "correctIndex": 0,
+        "hint": "De l’extérieur vers l’intérieur."
+      },
+      {
+        "id": 13,
+        "level": "difficile",
+        "question":
+          "Quel sélecteur cible les éléments qui ont à la fois la classe \"btn\" et \"active\" ?",
+        "options": [
+          ".btn.active",
+          ".btn .active",
+          "#btn.active",
+          ".btn+active"
+        ],
+        "correctIndex": 0,
+        "hint": "On met deux classes l’une après l’autre."
+      },
+      {
+        "id": 14,
+        "level": "difficile",
+        "question":
+          "Quelle fonction CSS permet de créer un dégradé de couleurs en arrière-plan ?",
+        "options": [
+          "linear-gradient()",
+          "color-gradient()",
+          "background-step()",
+          "gradient()"
+        ],
+        "correctIndex": 0,
+        "hint": "\"Linear\" veut dire \"en ligne droite\"."
+      },
+      {
+        "id": 15,
+        "level": "difficile",
+        "question":
+          "Quelle propriété permet de définir une grille CSS complexe à plusieurs colonnes ?",
+        "options": [
+          "grid-template-columns",
+          "column-grid-template",
+          "flex-columns",
+          "grid-column-set"
+        ],
+        "correctIndex": 0,
+        "hint": "Elle fait partie du module CSS Grid."
+      }
+  ],
+  "bonusQuestions": [
+    {
+      "id": 101,
+      "level": "bonus",
+      "question": "Quel sélecteur CSS permet de cibler un élément parent qui contient un enfant correspondant à un sélecteur donné ?",
+      "options": [":has()", ":parent()", ":contains()", ":with()"],
+      "correctIndex": 0,
+      "hint": "C'est un sélecteur relationnel récent, support modern navigateur."
+    },
+    {
+      "id": 102,
+      "level": "bonus",
+      "question": "À quoi sert la fonction CSS clamp(min, val, max) ?",
+      "options": [
+        "Définir une valeur bornée entre un minimum et un maximum",
+        "Concaténer des chaînes CSS",
+        "Créer un dégradé entre trois couleurs",
+        "Limiter le nombre d'itérations d'une animation"
+      ],
+      "correctIndex": 0,
+      "hint": "Très utile pour les tailles fluides (typo, blocs)."
+    },
+    {
+      "id": 103,
+      "level": "bonus",
+      "question": "Quelle unité CSS est relative à la largeur de la fenêtre (viewport) ?",
+      "options": ["vw", "vh", "rem", "em"],
+      "correctIndex": 0,
+      "hint": "'w' comme width."
+    },
+    {
+      "id": 104,
+      "level": "bonus",
+      "question": "Quelle directive CSS permet d'écrire des règles conditionnelles selon le support d'une fonctionnalité ?",
+      "options": ["@supports", "@media", "@feature", "@if"],
+      "correctIndex": 0,
+      "hint": "Pratique pour les features récentes (ex: :has)."
+    }
+  ]
+}

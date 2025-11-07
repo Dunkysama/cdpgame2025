@@ -58,4 +58,14 @@ WHERE NOT EXISTS (
   SELECT 1 FROM personnages p JOIN u3 ON p.id_utilisateur=u3.id_utilisateur AND p.pseudo='Le singe'
 );
 
+INSERT INTO themes (id_theme, nom_theme)
+VALUES
+  (1, 'CSS'),
+  (2, 'PHP'),
+  (3, 'JavaScript'),
+  (4, 'Java'),
+  (5, 'Global'),
+  (6, 'Python')
+ON CONFLICT (id_theme) DO NOTHING;
+
 COMMIT;
