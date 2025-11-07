@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function CodeCompletPage() {
@@ -104,8 +104,82 @@ export default function CodeCompletPage() {
     setCurrentBlockIndex(0);
   };
 
+  // Sauvegarder la progression (pour le Boss Final) quand les résultats sont affichés
+  useEffect(() => {
+    if (showResult) {
+      const totalDropdowns = codeBlocks.reduce(
+        (total, block) => total + block.code.filter((item) => item.type === "dropdown").length,
+        0
+      );
+      const percent = Math.round((score / totalDropdowns) * 100);
+      
+      // Sauvegarder dans la base de données
+      const saveProgress = async () => {
+        try {
+          if (typeof window !== "undefined") {
+            const savedCharacter = localStorage.getItem("selectedCharacter");
+            if (savedCharacter) {
+              const character = JSON.parse(savedCharacter);
+              const idPersonnage = character.id;
+
+              if (idPersonnage) {
+                const response = await fetch("/api/boss-mini-progress", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    nomMiniJeu: "sort",
+                    pourcentage: percent,
+                    idPersonnage: idPersonnage,
+                    addPenalty: percent < 75, // Ajouter une pénalité si échec
+                  }),
+                });
+
+                if (!response.ok) {
+                  console.error("Erreur lors de la sauvegarde de la progression sort");
+                  // Fallback sur localStorage en cas d'erreur
+                  localStorage.setItem("sortProgress", String(percent));
+                  if (percent < 75) {
+                    const currentPenalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
+                    localStorage.setItem("bossLivesPenalty", String(currentPenalty + 1));
+                  }
+                }
+              } else {
+                // Fallback sur localStorage si pas d'ID de personnage
+                localStorage.setItem("sortProgress", String(percent));
+                if (percent < 75) {
+                  const currentPenalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
+                  localStorage.setItem("bossLivesPenalty", String(currentPenalty + 1));
+                }
+              }
+            } else {
+              // Fallback sur localStorage si pas de personnage sélectionné
+              localStorage.setItem("sortProgress", String(percent));
+              if (percent < 75) {
+                const currentPenalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
+                localStorage.setItem("bossLivesPenalty", String(currentPenalty + 1));
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Erreur lors de la sauvegarde de la progression sort:", error);
+          // Fallback sur localStorage en cas d'erreur
+          try {
+            localStorage.setItem("sortProgress", String(percent));
+            if (percent < 75) {
+              const currentPenalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
+              localStorage.setItem("bossLivesPenalty", String(currentPenalty + 1));
+            }
+          } catch {}
+        }
+      };
+
+      saveProgress();
+    }
+  }, [showResult, score, codeBlocks]);
+
   return (
     <div className="flex min-h-screen items-center justify-center font-sans relative">
+      {/* Bouton fixe retiré pour n'afficher le retour qu'en fin de jeu */}
       <div className="w-full max-w-4xl px-6 relative z-10">
         {/* En-tête */}
         <div className="mb-8 text-center">
@@ -118,6 +192,8 @@ export default function CodeCompletPage() {
             </div>
           </div>
         </div>
+
+        
 
         {!showResult ? (
           <>
@@ -266,6 +342,14 @@ export default function CodeCompletPage() {
                   </div>
                 );
               })}
+            </div>
+            <div className="flex justify-center mt-6">
+              <button
+                onClick={() => router.push('/boss-final')}
+                className="rounded-lg font-pixel bg-zinc-800 px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 border-2 border-transparent hover:border-white"
+              >
+                RETOUR AU BOSS FINAL
+              </button>
             </div>
           </div>
         )}

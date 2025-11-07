@@ -1,10 +1,99 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import carteImage from "@/asset/carte.jpg";
 import Link from "next/link";
 
 export default function PageCarte() {
+  const [completedQuizzes, setCompletedQuizzes] = useState({});
+
+  useEffect(() => {
+    // Charger les quiz complétés depuis la base de données
+    const loadCompletedQuizzes = async () => {
+      try {
+        // Récupérer le personnage sélectionné pour filtrer ses quiz complétés
+        let idPersonnage = null;
+        if (typeof window !== "undefined") {
+          const savedCharacter = localStorage.getItem("selectedCharacter");
+          if (savedCharacter) {
+            try {
+              const character = JSON.parse(savedCharacter);
+              idPersonnage = character.id;
+            } catch (e) {
+              console.error("Erreur lors du parsing du personnage:", e);
+            }
+          }
+        }
+
+        // Construire l'URL avec l'ID du personnage si disponible
+        const url = idPersonnage 
+          ? `/api/quiz-completes?idPersonnage=${idPersonnage}`
+          : "/api/quiz-completes";
+
+        const response = await fetch(url, { cache: "no-store" });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.completedQuizzes) {
+            setCompletedQuizzes(data.completedQuizzes);
+          }
+        } else {
+          // Si non authentifié, fallback sur localStorage pour compatibilité
+          if (typeof window !== "undefined") {
+            const saved = localStorage.getItem("completedQuizzes");
+            if (saved) {
+              try {
+                setCompletedQuizzes(JSON.parse(saved));
+              } catch (e) {
+                console.error("Erreur lors du chargement des quiz complétés:", e);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des quiz complétés:", error);
+        // Fallback sur localStorage en cas d'erreur
+        if (typeof window !== "undefined") {
+          const saved = localStorage.getItem("completedQuizzes");
+          if (saved) {
+            try {
+              setCompletedQuizzes(JSON.parse(saved));
+            } catch (e) {
+              console.error("Erreur lors du chargement des quiz complétés:", e);
+            }
+          }
+        }
+      }
+    };
+
+    loadCompletedQuizzes();
+  }, []);
+
+  // Fonction pour obtenir les classes CSS selon l'état de complétion
+  const getQuizButtonClasses = (quizId) => {
+    const baseClasses = "absolute font-pixel text-white text-xs md:text-sm lg:text-base border rounded-sm px-2 py-1 hover:bg-black/80 transition-colors cursor-pointer";
+    const isCompleted = completedQuizzes[quizId];
+    
+    if (isCompleted) {
+      // Bouton vert pour quiz complété
+      return `${baseClasses} bg-green-600 border-green-500`;
+    }
+    // Bouton normal pour quiz non complété
+    return `${baseClasses} bg-black/60 border-white`;
+  };
+
+  const getGlobalButtonClasses = () => {
+    const baseClasses = "absolute font-pixel text-white text-sm md:text-base lg:text-lg border-2 rounded px-3 py-1 hover:bg-black/80 transition-colors cursor-pointer";
+    const isCompleted = completedQuizzes.global;
+    
+    if (isCompleted) {
+      // Bouton vert pour quiz complété
+      return `${baseClasses} bg-green-600 border-green-500`;
+    }
+    // Bouton normal pour quiz non complété
+    return `${baseClasses} bg-black/70 border-white`;
+  };
+
   return (
     <main className="p-0 m-0">
       {/* Conteneur centré avec ratio de l'image pour positionner précisément les zones */}
@@ -72,7 +161,7 @@ export default function PageCarte() {
             <Link
               href="/carte/css"
               prefetch={false}
-              className="absolute font-pixel text-white text-xs md:text-sm lg:text-base bg-black/60 border border-white rounded-sm px-2 py-1 hover:bg-black/80 transition-colors cursor-pointer"
+              className={getQuizButtonClasses("css")}
               style={{ top: "50%", left: "25%" }}
             >
               CSS
@@ -82,7 +171,7 @@ export default function PageCarte() {
             <Link
               href="/carte/js"
               prefetch={false}
-              className="absolute font-pixel text-white text-xs md:text-sm lg:text-base bg-black/60 border border-white rounded-sm px-2 py-1 hover:bg-black/80 transition-colors cursor-pointer"
+              className={getQuizButtonClasses("js")}
               style={{ top: "7%", right: "45%" }}
             >
               JS
@@ -92,7 +181,7 @@ export default function PageCarte() {
             <Link
               href="/carte/global"
               prefetch={false}
-              className="absolute font-pixel text-white text-sm md:text-base lg:text-lg bg-black/70 border-2 border-white rounded px-3 py-1 hover:bg-black/80 transition-colors cursor-pointer"
+              className={getGlobalButtonClasses()}
               style={{ top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}
             >
               GLOBAL
@@ -102,7 +191,7 @@ export default function PageCarte() {
             <Link
               href="/carte/php"
               prefetch={false}
-              className="absolute font-pixel text-white text-xs md:text-sm lg:text-base bg-black/60 border border-white rounded-sm px-2 py-1 hover:bg-black/80 transition-colors cursor-pointer"
+              className={getQuizButtonClasses("php")}
               style={{ top: "70%", left: "12%" }}
             >
               PHP
@@ -112,7 +201,7 @@ export default function PageCarte() {
             <Link
               href="/carte/java"
               prefetch={false}
-              className="absolute font-pixel text-white text-xs md:text-sm lg:text-base bg-black/60 border border-white rounded-sm px-2 py-1 hover:bg-black/80 transition-colors cursor-pointer"
+              className={getQuizButtonClasses("java")}
               style={{ top: "45%", right: "20%" }}
             >
               JAVA
@@ -122,7 +211,7 @@ export default function PageCarte() {
             <Link
               href="/carte/python"
               prefetch={false}
-              className="absolute font-pixel text-white text-xs md:text-sm lg:text-base bg-black/60 border border-white rounded-sm px-2 py-1 hover:bg-black/80 transition-colors cursor-pointer"
+              className={getQuizButtonClasses("python")}
               style={{ bottom: "70%", left: "13%", transform: "translateX(-50%)" }}
             >
               PYTHON

@@ -217,8 +217,80 @@ export default function ReconstruireEpeePage() {
   const isLastChallenge = currentChallengeIndex === challenges.length - 1;
   const allChallengesCompleted = Object.keys(results).length === challenges.length;
 
+  // Sauvegarder la progression (pour le Boss Final) quand les résultats sont affichés
+  useEffect(() => {
+    const completed = Object.keys(results).length === challenges.length;
+    if (showResult || completed) {
+      const percent = Math.round((score / challenges.length) * 100);
+      
+      // Sauvegarder dans la base de données
+      const saveProgress = async () => {
+        try {
+          if (typeof window !== "undefined") {
+            const savedCharacter = localStorage.getItem("selectedCharacter");
+            if (savedCharacter) {
+              const character = JSON.parse(savedCharacter);
+              const idPersonnage = character.id;
+
+              if (idPersonnage) {
+                const response = await fetch("/api/boss-mini-progress", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    nomMiniJeu: "epee",
+                    pourcentage: percent,
+                    idPersonnage: idPersonnage,
+                    addPenalty: percent < 75, // Ajouter une pénalité si échec
+                  }),
+                });
+
+                if (!response.ok) {
+                  console.error("Erreur lors de la sauvegarde de la progression epee");
+                  // Fallback sur localStorage en cas d'erreur
+                  localStorage.setItem("epeeProgress", String(percent));
+                  if (percent < 75) {
+                    const currentPenalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
+                    localStorage.setItem("bossLivesPenalty", String(currentPenalty + 1));
+                  }
+                }
+              } else {
+                // Fallback sur localStorage si pas d'ID de personnage
+                localStorage.setItem("epeeProgress", String(percent));
+                if (percent < 75) {
+                  const currentPenalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
+                  localStorage.setItem("bossLivesPenalty", String(currentPenalty + 1));
+                }
+              }
+            } else {
+              // Fallback sur localStorage si pas de personnage sélectionné
+              localStorage.setItem("epeeProgress", String(percent));
+              if (percent < 75) {
+                const currentPenalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
+                localStorage.setItem("bossLivesPenalty", String(currentPenalty + 1));
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Erreur lors de la sauvegarde de la progression epee:", error);
+          // Fallback sur localStorage en cas d'erreur
+          try {
+            localStorage.setItem("epeeProgress", String(percent));
+            if (percent < 75) {
+              const currentPenalty = parseInt(localStorage.getItem("bossLivesPenalty") || "0", 10);
+              localStorage.setItem("bossLivesPenalty", String(currentPenalty + 1));
+            }
+          } catch {}
+        }
+      };
+
+      saveProgress();
+    }
+  }, [showResult, results, score, challenges.length]);
+
   return (
     <div className="flex min-h-screen items-center justify-center font-sans relative">
+      {/* Bouton fixe retour au Boss Final */}
+      
       <div className="w-full max-w-4xl px-6 relative z-10">
         {/* En-tête */}
         <div className="mb-8 text-center">
@@ -231,6 +303,7 @@ export default function ReconstruireEpeePage() {
             </div>
           </div>
         </div>
+        
 
         {!showResult ? (
           <>
@@ -391,9 +464,9 @@ export default function ReconstruireEpeePage() {
               })}
             </div>
 
-            {/* Bouton réessayer uniquement si c'est le dernier défi */}
+            {/* Boutons de fin uniquement si c'est le dernier défi */}
             {isLastChallenge && (
-              <div className="text-center">
+              <div className="flex gap-4 justify-center">
                 <button
                   onClick={() => {
                     setResults({});
@@ -404,6 +477,12 @@ export default function ReconstruireEpeePage() {
                   className="rounded-lg font-pixel bg-zinc-800 px-8 py-4 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 border-2 border-transparent hover:border-white"
                 >
                   RECOMMENCER
+                </button>
+                <button
+                  onClick={() => router.push('/boss-final')}
+                  className="rounded-lg font-pixel bg-zinc-800 px-8 py-4 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 border-2 border-transparent hover:border-white"
+                >
+                  RETOUR AU BOSS FINAL
                 </button>
               </div>
             )}

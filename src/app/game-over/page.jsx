@@ -34,6 +34,59 @@ export default function GameOverPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Réinitialiser la progression des mini-jeux et les pénalités de vies
+  useEffect(() => {
+    const resetProgress = async () => {
+      try {
+        if (typeof window !== "undefined") {
+          const savedCharacter = localStorage.getItem("selectedCharacter");
+          if (savedCharacter) {
+            const character = JSON.parse(savedCharacter);
+            const idPersonnage = character.id;
+
+            if (idPersonnage) {
+              const response = await fetch(`/api/boss-mini-progress?idPersonnage=${idPersonnage}`, {
+                method: "DELETE",
+              });
+
+              if (!response.ok) {
+                console.error("Erreur lors de la réinitialisation de la progression");
+                // Fallback sur localStorage en cas d'erreur
+                localStorage.removeItem("furieProgress");
+                localStorage.removeItem("sortProgress");
+                localStorage.removeItem("epeeProgress");
+                localStorage.removeItem("bossLivesPenalty");
+              }
+            } else {
+              // Fallback sur localStorage si pas d'ID de personnage
+              localStorage.removeItem("furieProgress");
+              localStorage.removeItem("sortProgress");
+              localStorage.removeItem("epeeProgress");
+              localStorage.removeItem("bossLivesPenalty");
+            }
+          } else {
+            // Fallback sur localStorage si pas de personnage sélectionné
+            localStorage.removeItem("furieProgress");
+            localStorage.removeItem("sortProgress");
+            localStorage.removeItem("epeeProgress");
+            localStorage.removeItem("bossLivesPenalty");
+          }
+        }
+      } catch (error) {
+        console.error("Erreur lors de la réinitialisation de la progression:", error);
+        // Fallback sur localStorage en cas d'erreur
+        try {
+          localStorage.removeItem("furieProgress");
+          localStorage.removeItem("sortProgress");
+          localStorage.removeItem("epeeProgress");
+          localStorage.removeItem("bossLivesPenalty");
+        } catch {}
+      }
+    };
+
+    resetProgress();
+  }, []);
+
   return (
     <div className="flex min-h-screen items-center justify-center font-sans relative">
       <div className="w-full max-w-4xl px-6 relative z-10 text-center">

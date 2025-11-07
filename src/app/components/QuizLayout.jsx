@@ -27,6 +27,7 @@ export default function QuizLayout({
   timerSeconds,
   timerTotalSeconds,
   visualImageSrc,
+  visualImageFit = "contain",
   visualOverlaySrc,
   visualOverlayItems,
   visualCharacterSrc,
@@ -43,6 +44,9 @@ export default function QuizLayout({
   coinSrc,
   tokenSrc,
   tokens,
+  sablierCount,
+  onUseSablier,
+  disableSablier,
 }) {
   return (
     <main className="w-screen h-screen bg-black text-white">
@@ -55,7 +59,7 @@ export default function QuizLayout({
               src={visualImageSrc}
               alt=""
               fill
-              className="object-contain"
+              className={visualImageFit === "cover" ? "object-cover" : "object-contain"}
               priority
             />
           )}
@@ -218,6 +222,19 @@ export default function QuizLayout({
               >
                 <img src={changeIcon.src} alt="change" className="w-6 h-6 inline-block" />
               </button>
+              {typeof sablierCount === "number" && onUseSablier && (
+                <button
+                  className="relative w-9 h-9 border-2 border-black rounded-xl bg-white hover:bg-gray-100 font-pixel disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="Sablier"
+                  onClick={() => onUseSablier?.()}
+                  disabled={sablierCount <= 0 || disableSablier}
+                >
+                  ⏳
+                  <span className="absolute -top-2 -right-2 px-1 rounded bg-black text-white text-[10px] font-pixel">
+                    {typeof sablierCount === "number" ? sablierCount : 0}
+                  </span>
+                </button>
+              )}
             </div>
           </div>
           
